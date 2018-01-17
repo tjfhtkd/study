@@ -115,6 +115,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PracQuickSort.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PracQuickSort.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
