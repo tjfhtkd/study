@@ -43,3 +43,9 @@ enum class KeyMsg {
 	// DOWN | LEFT
 	// DOWN | RIGHT
 };
+
+typedef struct AnimationStruct {
+	KsDIB*	sprite;
+	INT		frameDelay;
+	COORD	centerPos;
+} AnimStruct;

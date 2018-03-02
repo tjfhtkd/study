@@ -11,7 +11,7 @@ Constants::~Constants()
 {
 }
 
-const wchar_t* Constants::resourcesPath = L"C:/Users/procademy/Desktop/과제/W11_homework_SpriteGame/WinSpriteGame/WinSpriteGame/SpriteData/";
+const wchar_t* Constants::resourcesPath = L"C:/Users/procademy/Desktop/과제/TCPfighter_SpriteData/";
 const wchar_t* Constants::resourcesFileName[Constants::RESOURCE_AMOUNTS] =
 {
 	// map
