@@ -1,6 +1,10 @@
 #include "stdafx.h"
-#include "CScreenDIB.h"
+
 #include "ResourceStorage.h"
+#include "BitmapLoader.h"
+
+// Test - clipping & Animation
+#include "Player.h"
 
 #include "GameManager.h"
 
@@ -44,13 +48,10 @@ bool GameManager::Initialize(void)
 	m_currRenderCnt = m_currUpdateCnt = m_secCnt = m_deltaTime = 0;
 	m_secCnt = timeGetTime();
 
-	// 이미지 처리를 위한 준비
-	m_imgProcessor = new ImageProcessor();
-
 	// 이미지 자료 로딩
 	int resourceAmount	= GameSystemInfo::GetInstance()->constants.RESOURCE_AMOUNTS;
 	m_resStorage			= new ResourceStorage(resourceAmount);
-	if (LoadBMPResources(m_resStorage, m_imgProcessor) == false)
+	if (LoadBMPResources(m_resStorage) == false)
 	{
 		Release();
 		return false;
@@ -58,6 +59,34 @@ bool GameManager::Initialize(void)
 
 	// Backbuffer 배경이미지 준비
 	m_backBuf = new CScreenDIB(m_resStorage->GetResource(Constants::ResourceName::MAP));
+
+	// Player 생성 - 테스트
+	Player* player = new Player();
+	player->m_animStandLeft = new Animation(3);
+	
+	AnimStruct* stand1 = player->m_animStandLeft->MakeAnimationStruct(
+		m_resStorage->GetResource(Constants::ResourceName::Stand_L_01)
+	, 2, { 20, 20 } );
+	AnimStruct* stand2 = player->m_animStandLeft->MakeAnimationStruct(
+		m_resStorage->GetResource(Constants::ResourceName::Stand_L_02)
+		, 2, { 20, 20 });
+	AnimStruct* stand3 = player->m_animStandLeft->MakeAnimationStruct(
+		m_resStorage->GetResource(Constants::ResourceName::Stand_L_03)
+		, 2, { 20, 20 });
+
+	player->m_animStandLeft->AddSprite(stand1);
+	player->m_animStandLeft->AddSprite(stand2);
+	player->m_animStandLeft->AddSprite(stand3);
+
+	// 모든 게임 객체에 대해 초기화가 제대로 되었는지 확인
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (objects[i]->Initialize() == false)
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -68,18 +97,21 @@ void GameManager::Release(void)
 	{
 		delete m_resStorage;
 	}
-	if (m_imgProcessor != nullptr)
-	{
-		delete m_imgProcessor;
-	}
+	
 	if (m_backBuf != nullptr)
 	{
 		delete m_backBuf;
 	}
+
+	objects.clear();
 }
 
-LONGLONG GameManager::Update(LONGLONG deltaTime)
+LONGLONG GameManager::Update(LONGLONG deltaTime, CScreenDIB* dib)
 {
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i]->Update(deltaTime, m_backBuf);
+	}
 	CalcFrameSkip(deltaTime);
 	PrintFPS(deltaTime);
 	m_currUpdateCnt++;
@@ -88,12 +120,17 @@ LONGLONG GameManager::Update(LONGLONG deltaTime)
 
 void GameManager::Draw(CScreenDIB* dib)
 {
-	m_backBuf->DrawBuffer(GameSystemInfo::GetInstance()->hWnd, 0, 0);
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i]->Draw(dib);
+	}
+	dib->DrawBuffer(GameSystemInfo::GetInstance()->hWnd, 0, 0);
 }
 
 /////////////////////////////// Private ///////////////////////////////
-bool GameManager::LoadBMPResources(ResourceStorage* resStore, ImageProcessor* imgProcessor)
+bool GameManager::LoadBMPResources(ResourceStorage* resStore)
 {
+	ImageProcessor imgProcessor;
 	BitmapLoader bmpLoader;
 	int storeSize = resStore->GetCapacity();
 	for (int i = 0; i < storeSize; i++)
@@ -104,10 +141,10 @@ bool GameManager::LoadBMPResources(ResourceStorage* resStore, ImageProcessor* im
 			, GameSystemInfo::GetInstance()->constants.resourcesFileName[i]);
 		
 		// 2. 정규 Bitmap 이미지를 이 게임에 맞는 KsDIB 규격으로 변환한다.
-		KsDIB* translatedBmp	= imgProcessor->TranslateBmp(originalBmp);
+		KsDIB* translatedBmp	= imgProcessor.TranslateBmp(originalBmp);
 		
 		// 3. Bitmap 이미지는 뒤집혀 있으므로 정방향으로 돌린다.
-		KsDIB* reversedBmp	= imgProcessor->ReverseBmpData(translatedBmp);
+		KsDIB* reversedBmp	= imgProcessor.ReverseBmpData(translatedBmp);
 
 		// 2 + 3. 같이 처리하는 방법, parameter를 바로 bmp 넣어주면 됨.
 		//KsDIB* reversedBmp = imgProcessor->ReverseBmpData(originalBmp);

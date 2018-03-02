@@ -54,3 +54,75 @@ KsDIB* ImageProcessor::ReverseBmpData(KsDIB* target)
 	free(lineBuf);
 	return target;
 }
+
+// 손 좀 많이 봐야할 듯
+void ImageProcessor::Clipping(OUT AnimStruct* target, IN RECT clippingArea, OUT BYTE* dibBuf, DWORD colorKey)
+{
+	PIXEL* buf = (PIXEL*)((void*)dibBuf);
+	LONG height = target->sprite->bmpInfoHeader->bmiHeader.biHeight;
+	LONG width = target->sprite->bmpInfoHeader->bmiHeader.biWidth;
+	SHORT posX = target->centerPos.X;
+	SHORT posY = target->centerPos.Y;
+
+	int correctionLeft = 0;
+	if (posX < clippingArea.left)
+	{
+		correctionLeft = abs(posX);
+		if (correctionLeft > width)
+		{
+			correctionLeft = width - 1;
+		}
+	}
+
+	int correctionRight = 0;
+	if (posX + width > clippingArea.right)
+	{
+		correctionRight = (posX + width) - clippingArea.right;
+		if (correctionRight >= clippingArea.right + width)
+		{
+			correctionRight = clippingArea.right - 1;
+		}
+	}
+
+	int correctionTop = 0;
+	if (posY < clippingArea.top)
+	{
+		correctionTop = abs(posY);
+		if (correctionTop > height)
+		{
+			correctionTop = height - 1;
+		}
+	}
+
+	int correctionBotton = 0;
+	if (posY + height > clippingArea.bottom)
+	{
+		correctionBotton = (posY + height) - clippingArea.bottom;
+		if (correctionBotton >= clippingArea.bottom + height)
+		{
+			correctionBotton = clippingArea.bottom - 1;
+		}
+	}
+
+	buf += posX;
+	if (posY > 0) {
+		buf += clippingArea.right * posY;
+	}
+
+	PIXEL* cursorCharacterframe = (PIXEL*)((void*)target->sprite->data);
+	cursorCharacterframe += correctionTop * width;
+	cursorCharacterframe += correctionLeft;
+	for (int i = correctionTop; i < height - correctionBotton; i++)
+	{
+		for (int j = correctionLeft; j < width - correctionRight; j++)
+		{
+			if (cursorCharacterframe->data != colorKey)
+			{
+				*(buf + j) = *cursorCharacterframe;
+			}
+			cursorCharacterframe++;
+		}
+		buf += clippingArea.right;
+		cursorCharacterframe += correctionLeft + correctionRight;
+	}
+}

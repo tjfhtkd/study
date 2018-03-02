@@ -24,11 +24,11 @@ public:
 	// CGameBase을(를) 통해 상속됨
 	virtual bool Initialize(void) override;
 	virtual void Release(void) override;
-	virtual LONGLONG Update(LONGLONG deltaTime) override;
-	virtual void Draw(CScreenDIB * dib) override;
+	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB* dib) override;
+	virtual void Draw(CScreenDIB* dib) override;
 
 private:
-	bool LoadBMPResources(ResourceStorage* resStore, ImageProcessor* imgProcessor);
+	bool LoadBMPResources(ResourceStorage* resStore);
 	void PrintFPS(LONGLONG deltaTime);
 	void CalcFrameSkip(LONGLONG deltaTime);
 
@@ -44,11 +44,12 @@ public:
 
 private:
 	CScreenDIB*			m_backBuf;
-	ImageProcessor*	m_imgProcessor;
 	ResourceStorage*	m_resStorage;
 
 	// Object Management
-	std::list<CGameBase*> objects;	// 삽입/삭제 속도를 위해 list 선택
+	// https://stackoverflow.com/questions/238008/relative-performance-of-stdvector-vs-stdlist-vs-stdslist
+	// 삽입 삭제하는 일보다 탐색하는 일이 많으므로 vector 선택
+	std::vector<CGameBase*> objects;
 
 	// frame skip management.
 	DWORD	m_accumulationDelay;

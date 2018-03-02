@@ -1,6 +1,7 @@
 #pragma once
 
 class CScreenDIB;
+class ImageProcessor;
 
 /*
 * @breif : 게임 내의 객체는 반드시 이 클래스를 상속받도록 한다.
@@ -21,9 +22,10 @@ public:
 	/*
 	* @brief : 모든 게임 객체는 반드시 Update를 통해 어떤 연산이 되어야만 한다. 따라서 순수 가상함수로 강제 구현을 시킨다.
 	* @param deltaTime : 이전 update에서 현재 update까지의 시간 간격.
+	* @param imgProcessor : 이미지 처리를 위한 프로세서.
 	* @return : Update가 완전히 완료된 시점의 시간값.
 	*/
-	virtual LONGLONG Update(LONGLONG deltaTime) = 0;
+	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB* dib) = 0;
 
 	/*
 	* @brief : 배경에 이미지를 그려넣는다.
