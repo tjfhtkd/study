@@ -14,6 +14,7 @@ protected:
 
 public:
 	void DrawBuffer(HWND hWnd, int x = 0, int y = 0);
+	void ClearBuffer(void);
 
 	BYTE* GetDibBuffer(void);
 	int GetWidth(void);
@@ -23,6 +24,7 @@ public:
 protected:
 	BITMAPINFO		m_stDibInfo;
 	BYTE*				m_bypBuffer;
+	KsDIB*				m_background;	// for clear buffer.
 
 	int					m_width;
 	int					m_height;

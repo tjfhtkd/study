@@ -14,10 +14,12 @@ public:
 	virtual ~Player();
 
 public:
+	void SetStatus(/*key msg에 따른 캐릭터 상태 정보*/);
+
 	// CGameBase을(를) 통해 상속됨
 	virtual bool Initialize(void) override;
 	virtual void Release(void) override;
-	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB * dib) override;
+	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB * dib, DWORD frameCount) override;
 	virtual void Draw(CScreenDIB * dib) override;
 
 	Animation*			m_animStandLeft;

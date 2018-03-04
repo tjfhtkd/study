@@ -7,7 +7,6 @@ Player::Player()
 {
 }
 
-
 Player::~Player()
 {
 }
@@ -22,15 +21,18 @@ void Player::Release(void)
 {
 }
 
-LONGLONG Player::Update(LONGLONG deltaTime, CScreenDIB* dib)
+LONGLONG Player::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 {
+	m_animStandLeft->Play(frameCount);
 	AnimStruct* animImg = m_animStandLeft->GetCurrentSprite();
-	m_imgProcessor->Clipping(animImg, GameSystemInfo::GetInstance()->GamePlayArea, dib->GetDibBuffer(), 0xffffffff );
+	m_imgProcessor->Clipping(animImg, GameSystemInfo::GetInstance()->WindowSize, dib->GetDibBuffer(), 0xffffffff );
 	return deltaTime;
 }
 
-void Player::Draw(CScreenDIB * dib)
+void Player::Draw(CScreenDIB* dib)
 {
 }
+
+
 
 /////////////////////////////// Private ///////////////////////////////

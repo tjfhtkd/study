@@ -77,6 +77,7 @@ bool GameManager::Initialize(void)
 	player->m_animStandLeft->AddSprite(stand1);
 	player->m_animStandLeft->AddSprite(stand2);
 	player->m_animStandLeft->AddSprite(stand3);
+	objects.push_back(player);
 
 	// 모든 게임 객체에 대해 초기화가 제대로 되었는지 확인
 	for (int i = 0; i < objects.size(); i++)
@@ -106,11 +107,11 @@ void GameManager::Release(void)
 	objects.clear();
 }
 
-LONGLONG GameManager::Update(LONGLONG deltaTime, CScreenDIB* dib)
+LONGLONG GameManager::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
-		objects[i]->Update(deltaTime, m_backBuf);
+		objects[i]->Update(deltaTime, m_backBuf, m_currUpdateCnt);
 	}
 	CalcFrameSkip(deltaTime);
 	PrintFPS(deltaTime);
@@ -125,6 +126,7 @@ void GameManager::Draw(CScreenDIB* dib)
 		objects[i]->Draw(dib);
 	}
 	dib->DrawBuffer(GameSystemInfo::GetInstance()->hWnd, 0, 0);
+	dib->ClearBuffer();
 }
 
 /////////////////////////////// Private ///////////////////////////////

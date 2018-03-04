@@ -24,7 +24,7 @@ public:
 	// CGameBase을(를) 통해 상속됨
 	virtual bool Initialize(void) override;
 	virtual void Release(void) override;
-	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB* dib) override;
+	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount) override;
 	virtual void Draw(CScreenDIB* dib) override;
 
 private:

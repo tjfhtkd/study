@@ -4,12 +4,13 @@
 
 CScreenDIB::CScreenDIB(KsDIB* background)
 {
-	m_bypBuffer = nullptr;
-	m_width = background->bmpInfoHeader->bmiHeader.biWidth;
-	m_height = background->bmpInfoHeader->bmiHeader.biHeight;
-	m_colorBit = background->bmpInfoHeader->bmiHeader.biBitCount;
-	m_bufferSize = 0;
-	m_pitch = (m_width * (m_colorBit >> 3) + 3) & ~3;
+	m_bypBuffer		= nullptr;
+	m_background	= background;
+	m_width			= background->bmpInfoHeader->bmiHeader.biWidth;
+	m_height			= background->bmpInfoHeader->bmiHeader.biHeight;
+	m_colorBit		= background->bmpInfoHeader->bmiHeader.biBitCount;
+	m_bufferSize		= 0;
+	m_pitch			= (m_width * (m_colorBit >> 3) + 3) & ~3;
 
 	CreateDibBuffer(background);
 	memcpy_s(m_bypBuffer, m_bufferSize, background->data, m_bufferSize);
@@ -17,12 +18,13 @@ CScreenDIB::CScreenDIB(KsDIB* background)
 
 CScreenDIB::CScreenDIB(int width, int height, int colorBit)
 {
-	m_bypBuffer = nullptr;
-	m_width = width;
-	m_height = height;
-	m_colorBit = colorBit;
-	m_bufferSize = 0;
-	m_pitch = (width * (colorBit >> 3) + 3) & ~3;
+	m_bypBuffer		= nullptr;
+	m_background	= nullptr;
+	m_width			= width;
+	m_height			= height;
+	m_colorBit		= colorBit;
+	m_bufferSize		= 0;
+	m_pitch			= (width * (colorBit >> 3) + 3) & ~3;
 
 	CreateDibBuffer(m_width, m_height, m_colorBit);
 }
@@ -77,6 +79,18 @@ void CScreenDIB::DrawBuffer(HWND hWnd, int x, int y)
 	HDC hdc = GetDC(hWnd);
 	StretchDIBits(hdc, x, y, m_width, m_height, x, y, m_width, m_height, m_bypBuffer, &m_stDibInfo, DIB_RGB_COLORS, SRCCOPY);
 	ReleaseDC(hWnd, hdc);
+}
+
+void CScreenDIB::ClearBuffer(void)
+{
+	if (m_background != nullptr)
+	{
+		memcpy_s(m_bypBuffer, m_bufferSize, m_background->data, m_bufferSize);
+	}
+	else
+	{
+		memset(m_bypBuffer, 0x00000000, m_bufferSize);
+	}
 }
 
 BYTE* CScreenDIB::GetDibBuffer(void)

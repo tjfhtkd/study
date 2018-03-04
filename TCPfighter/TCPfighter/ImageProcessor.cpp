@@ -60,9 +60,10 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN RECT clippingArea, OUT 
 {
 	PIXEL* buf = (PIXEL*)((void*)dibBuf);
 	LONG height = target->sprite->bmpInfoHeader->bmiHeader.biHeight;
-	LONG width = target->sprite->bmpInfoHeader->bmiHeader.biWidth;
+	LONG width = target->sprite->pitch / sizeof(PIXEL);
 	SHORT posX = target->centerPos.X;
 	SHORT posY = target->centerPos.Y;
+	//LONG clippingAreaPitch = 
 
 	int correctionLeft = 0;
 	if (posX < clippingArea.left)

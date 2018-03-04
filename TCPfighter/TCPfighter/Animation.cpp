@@ -46,11 +46,16 @@ bool Animation::AddSprite(AnimStruct* sprite, INT idx, bool bOverride)
 		return false;
 	}
 
-	if (m_anim[idx] != nullptr)
+	if (bOverride)
 	{
-		free(m_anim[idx]);
+		AnimStruct* delTarget = m_anim[idx];
+		free(delTarget);
+		m_anim[idx] = sprite;
 	}
-	m_anim[idx] = sprite;
+	else
+	{
+		m_anim.push_back(sprite);
+	}
 	return true;
 }
 
