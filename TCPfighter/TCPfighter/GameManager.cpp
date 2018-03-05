@@ -3,15 +3,12 @@
 #include "ResourceStorage.h"
 #include "BitmapLoader.h"
 
-// Test - clipping & Animation
-#include "Player.h"
-
 #include "GameManager.h"
 
 
 GameManager::GameManager()
 {
-	IsReady = Initialize();
+	Initialize();
 }
 
 
@@ -27,6 +24,19 @@ void GameManager::Render(void)
 	this->Draw(m_backBuf);
 }
 
+bool GameManager::IsReady(void)
+{
+	// 모든 게임 객체에 대해 초기화가 제대로 되었는지 확인
+	for (int i = 0; i < objects.size(); i++)
+	{
+		if (objects[i]->Initialize() == false)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 bool GameManager::isFrameSkip(void)
 {
 	if (m_accumulationDelay > FrameLimit)
@@ -40,6 +50,36 @@ bool GameManager::isFrameSkip(void)
 DWORD GameManager::GetExtraSleepTime(void)
 {
 	return FrameLimit - m_deltaTime;
+}
+
+ResourceStorage* GameManager::GetResourceStorage(void)
+{
+	return m_resStorage;
+}
+
+void GameManager::PushObject(CGameBase* obj)
+{
+	if (obj != nullptr)
+	{
+		objects.push_back(obj);
+	}
+}
+
+CGameBase* GameManager::PopObject(void)
+{
+	CGameBase* tmp = objects.back();
+	objects.pop_back();
+	return tmp;
+}
+
+std::vector<CGameBase*>::iterator GameManager::GetBegin(void)
+{
+	return objects.begin();
+}
+
+std::vector<CGameBase*>::iterator GameManager::GetEnd(void)
+{
+	return objects.end();
 }
 
 bool GameManager::Initialize(void)
@@ -59,35 +99,6 @@ bool GameManager::Initialize(void)
 
 	// Backbuffer 배경이미지 준비
 	m_backBuf = new CScreenDIB(m_resStorage->GetResource(Constants::ResourceName::MAP));
-
-	// Player 생성 - 테스트
-	Player* player = new Player();
-	player->m_animStandLeft = new Animation(3);
-	
-	AnimStruct* stand1 = player->m_animStandLeft->MakeAnimationStruct(
-		m_resStorage->GetResource(Constants::ResourceName::Stand_L_01)
-	, 2, { 20, 20 } );
-	AnimStruct* stand2 = player->m_animStandLeft->MakeAnimationStruct(
-		m_resStorage->GetResource(Constants::ResourceName::Stand_L_02)
-		, 2, { 20, 20 });
-	AnimStruct* stand3 = player->m_animStandLeft->MakeAnimationStruct(
-		m_resStorage->GetResource(Constants::ResourceName::Stand_L_03)
-		, 2, { 20, 20 });
-
-	player->m_animStandLeft->AddSprite(stand1);
-	player->m_animStandLeft->AddSprite(stand2);
-	player->m_animStandLeft->AddSprite(stand3);
-	objects.push_back(player);
-
-	// 모든 게임 객체에 대해 초기화가 제대로 되었는지 확인
-	for (int i = 0; i < objects.size(); i++)
-	{
-		if (objects[i]->Initialize() == false)
-		{
-			return false;
-		}
-	}
-
 	return true;
 }
 
@@ -105,6 +116,14 @@ void GameManager::Release(void)
 	}
 
 	objects.clear();
+}
+
+void GameManager::KeyProcess(KeyMsg keyMsg)
+{
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i]->KeyProcess(keyMsg);
+	}
 }
 
 LONGLONG GameManager::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)

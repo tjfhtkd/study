@@ -17,13 +17,23 @@ private:
 	};
 	
 public:
-	void Render(void);
+	bool IsReady(void);
 	bool isFrameSkip(void);
 	DWORD GetExtraSleepTime(void);
+	
+	ResourceStorage* GetResourceStorage(void);
+
+	void PushObject(CGameBase* obj);
+	CGameBase* PopObject(void);
+	std::vector<CGameBase*>::iterator GetBegin(void);
+	std::vector<CGameBase*>::iterator GetEnd(void);
+
+	void Render(void);
 
 	// CGameBase을(를) 통해 상속됨
 	virtual bool Initialize(void) override;
 	virtual void Release(void) override;
+	virtual void KeyProcess(KeyMsg keyMsg) override;
 	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount) override;
 	virtual void Draw(CScreenDIB* dib) override;
 
@@ -40,7 +50,6 @@ public:
 	DWORD	FrameLimit;
 	DWORD	m_currRenderCnt;
 	DWORD	m_currUpdateCnt;
-	bool		IsReady;
 
 private:
 	CScreenDIB*			m_backBuf;

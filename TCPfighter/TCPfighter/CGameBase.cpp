@@ -11,7 +11,6 @@ CGameBase::~CGameBase()
 {
 }
 
-KeyMsg* CGameBase::KeyProcess(void)
+void CGameBase::KeyProcess(KeyMsg keyMsg)
 {
-	return nullptr;
 }

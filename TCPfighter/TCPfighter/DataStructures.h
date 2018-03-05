@@ -33,16 +33,24 @@ typedef struct Bitmap {
 * @breif : 입력받은 특정 키 값을 게임에서 그대로 이용하지 않는다.
 * 특정 키 값을 KeyMsg에 맞게 매칭하여 사용해야 한다.
 */
-enum class KeyMsg {
-	// UP
-	// DOWN
-	// LEFT
-	// RIGHT
-	// UP | LEFT
-	// UP | RIGHT
-	// DOWN | LEFT
-	// DOWN | RIGHT
+enum class KeyMsg : UINT {
+	// DEFAULT
+	DO_NOTHING	= 0
+	// MOVE
+	, UP				= 1
+	, DOWN			= 2
+	, LEFT				= 4
+	, RIGHT			= 8
+	// ATTACK
+	, ATK_ZAP		= 16
+	, ATK_PAUNCH	= 32
+	, ATK_KICK		= 64
+	// SIZE
+	, KEY_MSG_SIZ = 7
+
 };
+//KeyMsg operator | (KeyMsg lhs, KeyMsg rhs);
+//KeyMsg& operator |= (KeyMsg& lhs, KeyMsg& rhs);
 
 typedef struct AnimationStruct {
 	KsDIB*	sprite;

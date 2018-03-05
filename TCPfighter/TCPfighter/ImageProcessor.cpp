@@ -56,13 +56,15 @@ KsDIB* ImageProcessor::ReverseBmpData(KsDIB* target)
 }
 
 // 손 좀 많이 봐야할 듯
-void ImageProcessor::Clipping(OUT AnimStruct* target, IN RECT clippingArea, OUT BYTE* dibBuf, DWORD colorKey)
+void ImageProcessor::Clipping(OUT AnimStruct* target, IN COORD* targetPos, IN RECT clippingArea, OUT BYTE* dibBuf, DWORD colorKey)
 {
 	PIXEL* buf = (PIXEL*)((void*)dibBuf);
 	LONG height = target->sprite->bmpInfoHeader->bmiHeader.biHeight;
 	LONG width = target->sprite->pitch / sizeof(PIXEL);
-	SHORT posX = target->centerPos.X;
-	SHORT posY = target->centerPos.Y;
+	/*SHORT posX = target->centerPos.X;
+	SHORT posY = target->centerPos.Y;*/
+	SHORT posX = targetPos->X;
+	SHORT posY = targetPos->Y;
 	//LONG clippingAreaPitch = 
 
 	int correctionLeft = 0;

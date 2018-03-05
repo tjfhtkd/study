@@ -10,6 +10,6 @@ public:
 	KsDIB* TranslateBmp(BMP* transTarget);
 	KsDIB* ReverseBmpData(BMP* target);
 	KsDIB* ReverseBmpData(KsDIB* target);
-	void Clipping(OUT AnimStruct* target, IN RECT clippingArea, OUT BYTE* dibBuf, DWORD colorKey);
+	void Clipping(OUT AnimStruct* target, IN COORD* targetPos, IN RECT clippingArea, OUT BYTE* dibBuf, DWORD colorKey);
 };
 

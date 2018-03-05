@@ -9,7 +9,7 @@ public:
 	// 심히 맘에 들지 않아...
 	enum class ResourceName {
 		MAP, HP, SHADOW,
-		Attack_L_01, Attack1_L_02, Attack1_L_03, Attack1_L_04,
+		Attack1_L_01, Attack1_L_02, Attack1_L_03, Attack1_L_04,
 		Attack1_R_01, Attack1_R_02, Attack1_R_03, Attack1_R_04,
 		Attack2_L_01, Attack2_L_02, Attack2_L_03, Attack2_L_04,
 		Attack2_R_01, Attack2_R_02, Attack2_R_03, Attack2_R_04,

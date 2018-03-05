@@ -169,6 +169,7 @@
     <ClCompile Include="CGameBase.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="CScreenDIB.cpp" />
+    <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameSystemInfo.cpp" />
     <ClCompile Include="ImageProcessor.cpp" />

@@ -14,24 +14,39 @@ public:
 	virtual ~Player();
 
 public:
-	void SetStatus(/*key msg에 따른 캐릭터 상태 정보*/);
+	enum class Status {
+		MOVE_UP, MOVE_UPLEFT, MOVE_UPRIGHT
+		, MOVE_DOWN, MOVE_DOWN_LEFT, MOVE_DOWN_RIGHT
+		, STAND_R, STAND_L
+		, MOVE_R, MOVE_L
+		, ATTACK_ZAP_R, ATTACK_ZAP_L
+		, ATTACK_PAUNCH_R, ATTACK_PAUNCH_L
+		, ATTACK_KICK_R, ATTACK_KICK_L
+		, STATUS_END_SIZE
+	};
+
+public:
+	void SetStatus(Status status);
+	Player::Status GetStatus(void);
+	bool AddAnimations(Animation* anim, Status status);
+	Animation* GetAnimation(Status status);
+
+	// Plyaer behaviour
+	void Move(Status moveStatus);
+	void Attack(Status attackStatus);
 
 	// CGameBase을(를) 통해 상속됨
 	virtual bool Initialize(void) override;
 	virtual void Release(void) override;
+	virtual void KeyProcess(KeyMsg keyMsg) override;
 	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB * dib, DWORD frameCount) override;
 	virtual void Draw(CScreenDIB * dib) override;
 
-	Animation*			m_animStandLeft;
+public:
+	COORD	Position;
+
 private:
+	Animation**			animations;
 	ImageProcessor*	m_imgProcessor;
-	Animation*			m_animStandRight;
-	Animation*			m_animMoveLeft;
-	Animation*			m_animMoveRight;
-	Animation*			m_animAttackZapLeft;
-	Animation*			m_animAttackZapRight;
-	Animation*			m_animPaunchLeft;
-	Animation*			m_animPaunchRight;
-	Animation*			m_animKickLeft;
-	Animation*			m_animKickRight;
+	Status					m_currentStatus;
 };
