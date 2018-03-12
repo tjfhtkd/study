@@ -52,20 +52,19 @@ KsDIB* ImageProcessor::ReverseBmpData(KsDIB* target)
 		memcpy_s(cursor + ((height - (i + 1)) * pitch), pitch, lineBuf, pitch);
 	}
 	free(lineBuf);
+	lineBuf = nullptr;
 	return target;
 }
 
 // 손 좀 많이 봐야할 듯
-void ImageProcessor::Clipping(OUT AnimStruct* target, IN COORD* targetPos, IN RECT clippingArea, OUT BYTE* dibBuf, DWORD colorKey)
+void ImageProcessor::Clipping(OUT AnimStruct* target, IN COORD* targetPos, IN RECT clippingArea, OUT CScreenDIB* dibBuf, IN PIXEL colorKey)
 {
-	PIXEL* buf = (PIXEL*)((void*)dibBuf);
+	PIXEL* buf = (PIXEL*)((void*)dibBuf->GetDibBuffer());
+	LONG nextLineTerm = dibBuf->GetPitch() / sizeof(PIXEL);
 	LONG height = target->sprite->bmpInfoHeader->bmiHeader.biHeight;
 	LONG width = target->sprite->pitch / sizeof(PIXEL);
-	/*SHORT posX = target->centerPos.X;
-	SHORT posY = target->centerPos.Y;*/
-	SHORT posX = targetPos->X;
-	SHORT posY = targetPos->Y;
-	//LONG clippingAreaPitch = 
+	SHORT posX = (targetPos != nullptr) ? targetPos->X : 0;
+	SHORT posY = (targetPos != nullptr) ? targetPos->Y : 0;
 
 	int correctionLeft = 0;
 	if (posX < clippingArea.left)
@@ -119,13 +118,62 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN COORD* targetPos, IN RE
 	{
 		for (int j = correctionLeft; j < width - correctionRight; j++)
 		{
-			if (cursorCharacterframe->data != colorKey)
+			if (cursorCharacterframe->element.red != colorKey.element.red &&
+				cursorCharacterframe->element.green != colorKey.element.green &&
+				cursorCharacterframe->element.blue != colorKey.element.blue)
 			{
 				*(buf + j) = *cursorCharacterframe;
 			}
 			cursorCharacterframe++;
 		}
-		buf += clippingArea.right;
+		buf += nextLineTerm;
 		cursorCharacterframe += correctionLeft + correctionRight;
 	}
+}
+
+bool ImageProcessor::AlphaBlending(OUT AnimStruct* target, IN COORD* blendingStartPos, IN RECT* blendingArea, IN PIXEL colorKey, OUT CScreenDIB* dibBuf)
+{
+	if (dibBuf == nullptr || target == nullptr)
+	{
+		return false;
+	}
+
+	// X 값이 음수일 때 false 해버리면 캐릭터가 제일 좌측으로 갈 때 false가 반환되서 블렌딩 하지 않음.
+	// 제대로 할거라면 예외처리를 모든 X(left), Y(bottom), right, top에 해주어야 함.
+	if ((/*blendingStartPos->X < 0 || */blendingStartPos->Y < 0) ||
+		(blendingArea->left < 0 || blendingArea->top < 0 || blendingArea->right < 0 || blendingArea->bottom < 0))
+	{
+		return false;
+	}
+
+	PIXEL* obj = target->sprite->data;
+	PIXEL* buf = (PIXEL*)dibBuf->GetDibBuffer();
+	buf += abs(blendingStartPos->X);
+	buf += blendingStartPos->Y * (dibBuf->GetPitch() / sizeof(PIXEL));
+	for (int i = blendingArea->top; i < blendingArea->bottom; i++)
+	{
+		for (int j = blendingArea->left; j < blendingArea->right; j++)
+		{
+			if (j > target->sprite->pitch/ sizeof(PIXEL))
+			{
+				break;
+			}
+			if (colorKey.data & 0x00ffffff == (obj + j)->data)
+			{
+				continue;
+			}
+			(obj + j)->element.alpha	= 0xff;
+			(obj + j)->element.red		= ((buf + j)->element.red / 2) + (((obj + j))->element.red / 2);
+			(obj + j)->element.green	= ((buf + j)->element.green / 2) + ((obj + j)->element.green / 2);
+			(obj + j)->element.blue		= ((buf + j)->element.blue / 2) + ((obj + j)->element.blue / 2);
+		}
+		if (i >= target->sprite->bmpInfoHeader->bmiHeader.biHeight - 1)
+		{
+			break;
+		}
+		obj += target->sprite->pitch / sizeof(PIXEL);
+		buf += dibBuf->GetPitch() / sizeof(PIXEL);
+	}
+
+	return true;
 }

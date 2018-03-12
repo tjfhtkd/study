@@ -45,6 +45,7 @@ void ResourceStorage::ReleaseAllResource(void)
 		BYTE* p = (BYTE*) &((*begin)->bmpInfoHeader);
 		BMP* del = (BMP*) (p - correctionAddress);
 		free(del);
+		del = nullptr;
 		begin++;
 	}
 	resources.clear();

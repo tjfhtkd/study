@@ -2,11 +2,14 @@
 #include "Animation.h"
 
 
-Animation::Animation(INT playImgAmount)
+Animation::Animation(INT playImgAmount, bool bCircularPlay)
 {
 	m_anim.reserve(playImgAmount);
-	m_currSpriteIdx = 0;
-	m_AnimReversePlay = -1;
+	m_currSpriteIdx = -1;
+	m_frameDelayCount = -1;
+	m_AnimReversePlay = 1;
+	m_bCircularPlay = bCircularPlay;
+	m_bEnd = false;
 }
 
 Animation::~Animation()
@@ -14,6 +17,7 @@ Animation::~Animation()
 	for (int i = 0; i < m_anim.size(); i++)
 	{
 		free(m_anim[i]);
+		m_anim[i] = nullptr;
 	}
 	m_anim.clear();
 }
@@ -50,6 +54,7 @@ bool Animation::AddSprite(AnimStruct* sprite, INT idx, bool bOverride)
 	{
 		AnimStruct* delTarget = m_anim[idx];
 		free(delTarget);
+		delTarget = nullptr;
 		m_anim[idx] = sprite;
 	}
 	else
@@ -61,42 +66,66 @@ bool Animation::AddSprite(AnimStruct* sprite, INT idx, bool bOverride)
 
 void Animation::Play(INT frameCount)
 {
-	if(m_bPause) {
-		return;
-	}
-	// puase랑은 상관없이 frameCount는 계속 흐르기 때문에 Replay 할 때
-	// 바로 재생 할 때도 있고, 이동은 되는데 애니메이션이 바로 재생이 안 될 때도 있을 것이다.
-	// 허나 중요치 않고 귀찮으니 그냥 넘긴다!
-	// 제대로 동작시키려면 frameCount를 따로 저장하고 그 값으로 계산.
-	if (frameCount % m_anim[m_currSpriteIdx]->frameDelay != 0)
-	{
+	if(m_bPause || m_bEnd) {
 		return;
 	}
 
-	if (m_currSpriteIdx == 0 ||
-		m_currSpriteIdx == m_anim.size() - 1)
+	// 정방향 애니메이션 재생 1->2->3[end] 1->2->3[end]
+	m_frameDelayCount++;
+	if (m_frameDelayCount % m_anim[m_currSpriteIdx + 1]->frameDelay == 0)
 	{
-		m_AnimReversePlay *= (-1);
+		m_currSpriteIdx += m_AnimReversePlay;
+		m_frameDelayCount = 0;
 	}
-	m_currSpriteIdx += m_AnimReversePlay;
+
+	if (m_currSpriteIdx == m_anim.size() - 1)
+	{
+		m_bEnd = true;
+		m_frameDelayCount = -1;
+	}
+
+	// 역방향 애니메이션 로직으로 변환 1->2->3->2->1[end]
+	if (m_currSpriteIdx == -2)
+	{
+		m_bEnd = true;
+		m_currSpriteIdx = -1;
+		m_frameDelayCount = -1;
+		m_AnimReversePlay = 1;
+	}
+	else
+	{
+		if (m_bCircularPlay == true && m_bEnd == true)
+		{
+			m_bEnd = false;
+			m_currSpriteIdx--;
+			m_AnimReversePlay = -1;
+		}
+	}
 }
 
-void Animation::Stop(void)
+void Animation::Reset(void)
 {
-	m_currSpriteIdx = 0;
+	m_bEnd = false;
+	m_currSpriteIdx = -1;
+	m_frameDelayCount = -1;
+	m_AnimReversePlay = 1;
 }
 
-void Animation::Pause(void)
+void Animation::Pause(bool bPause)
 {
-	m_bPause = true;
+	m_bPause = bPause;
 }
 
-void Animation::Replay(void)
+bool Animation::IsEnd(void)
 {
-	m_bPause = false;
+	return m_bEnd;
 }
 
 AnimStruct* Animation::GetCurrentSprite(void)
 {
+	if (m_bCircularPlay)
+	{
+		return m_anim[m_currSpriteIdx + 1];
+	}
 	return m_anim[m_currSpriteIdx];
 }

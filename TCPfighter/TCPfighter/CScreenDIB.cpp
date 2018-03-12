@@ -16,7 +16,7 @@ CScreenDIB::CScreenDIB(KsDIB* background)
 	memcpy_s(m_bypBuffer, m_bufferSize, background->data, m_bufferSize);
 }
 
-CScreenDIB::CScreenDIB(int width, int height, int colorBit)
+CScreenDIB::CScreenDIB(int width, int height, int colorBit, PIXEL defaultFillColor)
 {
 	m_bypBuffer		= nullptr;
 	m_background	= nullptr;
@@ -27,6 +27,8 @@ CScreenDIB::CScreenDIB(int width, int height, int colorBit)
 	m_pitch			= (width * (colorBit >> 3) + 3) & ~3;
 
 	CreateDibBuffer(m_width, m_height, m_colorBit);
+	memset(m_bypBuffer, defaultFillColor.data, m_bufferSize);
+	m_defaultFillColor = defaultFillColor;
 }
 
 CScreenDIB::~CScreenDIB()
@@ -71,6 +73,7 @@ void CScreenDIB::ReleaseDibBuffer(void)
 {
 	if (m_bypBuffer != nullptr) {
 		free(m_bypBuffer);
+		m_bypBuffer = nullptr;
 	}
 }
 
@@ -89,7 +92,7 @@ void CScreenDIB::ClearBuffer(void)
 	}
 	else
 	{
-		memset(m_bypBuffer, 0x00000000, m_bufferSize);
+		memset(m_bypBuffer, m_defaultFillColor.data, m_bufferSize);
 	}
 }
 
@@ -112,3 +115,9 @@ int CScreenDIB::GetPitch(void)
 {
 	return m_pitch;
 }
+
+int CScreenDIB::GetBufferSize(void)
+{
+	return m_bufferSize;
+}
+

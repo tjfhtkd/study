@@ -31,6 +31,7 @@ BMP* BitmapLoader::LoadBmp(const wchar_t* path, const wchar_t* fileName)
 	if (checkHeaderSize != fileHeaderSize)
 	{
 		free(bmpFileHeader);
+		bmpFileHeader = nullptr;
 		fclose(fp);
 		return nullptr;
 	}
@@ -43,6 +44,8 @@ BMP* BitmapLoader::LoadBmp(const wchar_t* path, const wchar_t* fileName)
 	{
 		free(bmpFileHeader);
 		free(bmpInfoHeader);
+		bmpFileHeader = nullptr;
+		bmpInfoHeader = nullptr;
 		fclose(fp);
 		return nullptr;
 	}
@@ -65,6 +68,9 @@ BMP* BitmapLoader::LoadBmp(const wchar_t* path, const wchar_t* fileName)
 		free(bmpFileHeader);
 		free(bmpInfoHeader);
 		free(rawData);
+		bmpFileHeader = nullptr;
+		bmpInfoHeader = nullptr;
+		rawData = nullptr;
 		fclose(fp);
 		return nullptr;
 	}

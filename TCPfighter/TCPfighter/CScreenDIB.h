@@ -4,7 +4,7 @@ class CScreenDIB
 {
 public:
 	CScreenDIB(KsDIB* spriteInfo);
-	CScreenDIB(int width, int height, int colorBit);
+	CScreenDIB(int width, int height, int colorBit, PIXEL defaultFillColor);
 	virtual ~CScreenDIB();
 
 protected:
@@ -20,11 +20,13 @@ public:
 	int GetWidth(void);
 	int GetHeight(void);
 	int GetPitch(void);
+	int GetBufferSize(void);
 
 protected:
 	BITMAPINFO		m_stDibInfo;
 	BYTE*				m_bypBuffer;
-	KsDIB*				m_background;	// for clear buffer.
+	KsDIB*			m_background;	// for clear buffer.
+	PIXEL				m_defaultFillColor;
 
 	int					m_width;
 	int					m_height;

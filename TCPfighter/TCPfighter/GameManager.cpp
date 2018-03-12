@@ -104,15 +104,17 @@ bool GameManager::Initialize(void)
 
 void GameManager::Release(void)
 {
-	m_resStorage->ReleaseAllResource();
 	if (m_resStorage != nullptr)
 	{
+		m_resStorage->ReleaseAllResource();
 		delete m_resStorage;
+		m_resStorage = nullptr;
 	}
 	
 	if (m_backBuf != nullptr)
 	{
 		delete m_backBuf;
+		m_backBuf = nullptr;
 	}
 
 	objects.clear();

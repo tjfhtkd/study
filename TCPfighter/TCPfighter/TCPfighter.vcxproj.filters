@@ -66,6 +66,12 @@
     <ClInclude Include="Animation.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="HpGuage.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Shadow.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -105,6 +111,12 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="TCPfighter.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="HpGuage.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Shadow.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

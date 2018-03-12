@@ -56,4 +56,5 @@ typedef struct AnimationStruct {
 	KsDIB*	sprite;
 	INT		frameDelay;
 	COORD	centerPos;
+	PIXEL		colorKey;
 } AnimStruct;

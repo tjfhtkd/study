@@ -155,10 +155,12 @@
     <ClInclude Include="DataStructures.h" />
     <ClInclude Include="GameManager.h" />
     <ClInclude Include="GameSystemInfo.h" />
+    <ClInclude Include="HpGuage.h" />
     <ClInclude Include="ImageProcessor.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceStorage.h" />
+    <ClInclude Include="Shadow.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TCPfighter.h" />
@@ -172,9 +174,11 @@
     <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="GameSystemInfo.cpp" />
+    <ClCompile Include="HpGuage.cpp" />
     <ClCompile Include="ImageProcessor.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResourceStorage.cpp" />
+    <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
