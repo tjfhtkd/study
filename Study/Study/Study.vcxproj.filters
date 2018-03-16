@@ -13,19 +13,60 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Creational">
-      <UniqueIdentifier>{c7a16834-a3f2-4692-a4d5-1fb441ad4364}</UniqueIdentifier>
+    <Filter Include="Client">
+      <UniqueIdentifier>{6ee46fc2-8120-44a5-b5cf-df7ebc3d80e8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Structural">
-      <UniqueIdentifier>{6112bbe4-19e1-4cab-bb13-fbd0137ff22b}</UniqueIdentifier>
+    <Filter Include="Server">
+      <UniqueIdentifier>{15f99b44-16b9-495f-b17a-b8d16f61a0b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Behavioural">
-      <UniqueIdentifier>{130ea2ff-eb32-4277-882b-56753852f8b4}</UniqueIdentifier>
+    <Filter Include="Util">
+      <UniqueIdentifier>{a912046b-1bfd-4bcf-a978-835e8f68895f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="MyNetConnector.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="MyNetClient.cpp">
+      <Filter>Client</Filter>
+    </ClCompile>
+    <ClCompile Include="MyNetServer.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientList.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="MyNetMessenger.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MyNetConnector.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="MyNetClient.h">
+      <Filter>Client</Filter>
+    </ClInclude>
+    <ClInclude Include="MyNetServer.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientList.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="MyNetMessenger.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="MyMsgStructure.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
