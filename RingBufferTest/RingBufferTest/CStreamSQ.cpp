@@ -73,11 +73,11 @@ int CStreamSQ::Enqueue(char *chpData, int iByteOfData)
 	int writableSize = 0;
 	if (writePos >= readPos)
 	{
-		bufSize - (writePos + 1);
+		writableSize = bufSize - (writePos + 1);
 	}
 	else
 	{
-		readPos - (writePos + 1);
+		writableSize =readPos - (writePos + 1);
 	}
 
 	if (writableSize >= iByteOfData)	// 쓰려는 용량보다 여유공간이 많다면
