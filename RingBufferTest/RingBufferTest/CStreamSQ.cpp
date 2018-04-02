@@ -60,31 +60,75 @@ int CStreamSQ::GetReadableSizeAtOneTime(void)
 
 int CStreamSQ::Enqueue(char *chpData, int iByteOfData)
 {
-	int writableSize = (m_writePos >= m_readPos) ? m_bufSize - (m_writePos + 1) : m_readPos - (m_writePos + 1);
-	if (writableSize >= iByteOfData)
+	// 이 이상으로 빨라지려면
+	// 1. 소스 라인을 줄인다. (더 나은 로직 필요)
+	// 2. memcpy 성능을 올린다.
+	int writePos = m_writePos;
+	int readPos = m_readPos;
+	int bufSize = m_bufSize;
+
+	// 라인 부하량에서 삼항 연산보다 if문이 우세함. 조건적으로 if문이 더 빠름. 분기 예측과 관련 있는 것으로 보임.
+	// 삼항은 조건-참문-거짓문 모두 들어가서 그런 것으로 추측됨.
+	// https://code.i-harness.com/ko/q/1086a01  < 추측한 것과 비슷한 내용에 대해 실험된 글
+	int writableSize = 0;
+	if (writePos >= readPos)
 	{
-		memcpy_s(&m_queue[(m_writePos + 1) % m_bufSize], iByteOfData, chpData, iByteOfData);
-		return MoveWritePos(iByteOfData);
+		bufSize - (writePos + 1);
 	}
 	else
 	{
-		memcpy_s(&m_queue[(m_writePos + 1) % m_bufSize], writableSize, chpData, writableSize);
-		int writedByte	= MoveWritePos(writableSize);
-		int remainByte	= iByteOfData - writedByte;
-		int freeSize		= GetFreeSize();
-		if (freeSize == 0)
+		readPos - (writePos + 1);
+	}
+
+	if (writableSize >= iByteOfData)	// 쓰려는 용량보다 여유공간이 많다면
+	{
+		memcpy_s(&m_queue[writePos + 1], iByteOfData, chpData, iByteOfData);
+		writePos += iByteOfData;
+		if (writePos >= bufSize - 1)
 		{
-			return writedByte;
+			writePos -= bufSize;
+		}
+		m_writePos = writePos;
+		return iByteOfData;
+	}
+	else  // 오른쪽으로 한 번에 쓸 수 있는 여유 공간보다 더 많은 용량이 요구됨
+	{
+		// 일단 오른쪽에는 있는데로 다 씀
+		memcpy_s(&m_queue[writePos + 1], writableSize, chpData, writableSize);
+		writePos += writableSize;
+		if (writePos + 1 >= bufSize)
+		{
+			writePos -= bufSize;
 		}
 
-		if (remainByte > freeSize)
+		int remainByte	= iByteOfData - writableSize;
+		int freeSize = 0;			// 남은 용량 재계산
+		if (writePos < readPos)
 		{
-			remainByte = freeSize;
+			freeSize = readPos - (writePos + 1);
 		}
-		memcpy_s(&m_queue[(m_writePos + 1) % m_bufSize], remainByte, &chpData[writedByte], remainByte);
-		return MoveWritePos(remainByte) + writedByte;
+		else
+		{
+			freeSize = bufSize - (writePos + 1);
+		}
+
+		if (freeSize == 0)	// 남은 용량이 없다면 종료
+		{
+			m_writePos = writePos;
+			return writableSize;
+		}
+
+		// 남은 용량이 있는데
+		if (remainByte > freeSize) // 남은 용량보다도 여전히 써야할 용량이 크다면
+		{
+			remainByte = freeSize; // 사용 가능한 용량까지만 씀
+		}
+		memcpy_s(&m_queue[writePos + 1], remainByte, &chpData[writableSize], remainByte);
+		writePos += remainByte;
+
+		m_writePos = writePos;
+		return remainByte + writableSize;
 	}
-	return 0;
 }
 
 int CStreamSQ::Dequeue(char *chpDest, int iByteOfData)
