@@ -49,12 +49,16 @@ enum class KeyMsg : UINT {
 	, KEY_MSG_SIZ = 7
 
 };
-//KeyMsg operator | (KeyMsg lhs, KeyMsg rhs);
-//KeyMsg& operator |= (KeyMsg& lhs, KeyMsg& rhs);
+
+struct Position
+{
+	WORD X;
+	WORD Y;
+};
 
 typedef struct AnimationStruct {
 	KsDIB*	sprite;
 	INT		frameDelay;
-	COORD	centerPos;
+	Position	centerPos;
 	PIXEL		colorKey;
 } AnimStruct;

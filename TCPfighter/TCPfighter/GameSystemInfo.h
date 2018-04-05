@@ -16,6 +16,7 @@ public:
 	HWND	hWnd;
 	RECT		GamePlayArea;
 	RECT		WindowSize;
+	SOCKET	ServerSock;
 
 private:
 	GameSystemInfo();

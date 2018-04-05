@@ -1,5 +1,7 @@
 #pragma once
 
+#include "PacketDefine.h"
+
 class CScreenDIB;
 class ImageProcessor;
 
@@ -10,9 +12,15 @@ class CGameBase
 {
 public:
 	CGameBase();
-	~CGameBase();
+	virtual ~CGameBase();
 
 public:
+	INT		ID;
+	Position	position;
+
+public:
+	virtual void CommunicateNetwork(stPacket_ArgCollectionBox intendBox) = 0;
+
 	// 키처리는 모든 게임 객체가 반드시 수행해야 하는 것은 아니므로 가상함수로 한다.
 	virtual void KeyProcess(KeyMsg keyMsg);
 	

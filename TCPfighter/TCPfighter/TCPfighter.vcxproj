@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -152,11 +152,20 @@
     <ClInclude Include="CGameBase.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="CScreenDIB.h" />
+    <ClInclude Include="CStreamSQ.h" />
     <ClInclude Include="DataStructures.h" />
     <ClInclude Include="GameManager.h" />
+    <ClInclude Include="GameNetReactor.h" />
     <ClInclude Include="GameSystemInfo.h" />
     <ClInclude Include="HpGuage.h" />
     <ClInclude Include="ImageProcessor.h" />
+    <ClInclude Include="INetReactor.h" />
+    <ClInclude Include="NetConnector.h" />
+    <ClInclude Include="NetMessenger.h" />
+    <ClInclude Include="NetProcessor.h" />
+    <ClInclude Include="OtherPlayer.h" />
+    <ClInclude Include="PacketAnalyzer.h" />
+    <ClInclude Include="PacketDefine.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ResourceStorage.h" />
@@ -171,11 +180,17 @@
     <ClCompile Include="CGameBase.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="CScreenDIB.cpp" />
-    <ClCompile Include="DataStructures.cpp" />
+    <ClCompile Include="CStreamSQ.cpp" />
     <ClCompile Include="GameManager.cpp" />
+    <ClCompile Include="GameNetReactor.cpp" />
     <ClCompile Include="GameSystemInfo.cpp" />
     <ClCompile Include="HpGuage.cpp" />
     <ClCompile Include="ImageProcessor.cpp" />
+    <ClCompile Include="NetConnector.cpp" />
+    <ClCompile Include="NetMessenger.cpp" />
+    <ClCompile Include="NetProcessor.cpp" />
+    <ClCompile Include="OtherPlayer.cpp" />
+    <ClCompile Include="PacketAnalyzer.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResourceStorage.cpp" />
     <ClCompile Include="Shadow.cpp" />

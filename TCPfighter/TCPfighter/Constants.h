@@ -23,6 +23,7 @@ public:
 
 public:
 	// ±¸·Á
+	static const int	SERVER_PORT = 5000;
 	static const int	RESOURCE_AMOUNTS = 65;
 	static const wchar_t*	resourcesFileName[RESOURCE_AMOUNTS];
 	static const wchar_t*	resourcesPath;

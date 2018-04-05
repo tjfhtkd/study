@@ -7,13 +7,14 @@ public:
 	/*
 	* @brief : Animation 객체의 생성자이며 애니메이션을 몇 장 재생할 것인가, 어떻게 재생할 것인가를 결정한다.
 	* @param playImgAmount : 재생할 이미지의 장 수.
+	* @param playCount : 반복 재생할 횟수. 0이면 무한 반복.
 	* @param bCircularPlay : 순환 재생 여부이며, 1->2->3->2->1 형태면 True, 1->2->3->1->2->3 이면 False 이다.
 	*/
 	Animation(INT playImgAmount, bool bCircularPlay);
 	virtual ~Animation();
 
 public:
-	AnimStruct* MakeAnimationStruct(KsDIB * image, INT frameDelay, COORD centerPos);
+	AnimStruct* MakeAnimationStruct(KsDIB * image, INT frameDelay, Position centerPos);
 	bool AddSprite(AnimStruct* sprite, bool bOverride = false);
 	bool AddSprite(AnimStruct* sprite, INT idx, bool bOverride = false);
 	/*

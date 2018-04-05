@@ -44,11 +44,11 @@ Shadow::~Shadow()
 	}
 	m_imgProcessor = nullptr;
 	m_shadowImg = nullptr;
-	Position = { 0, 0 };
+	position = { 0, 0 };
 	On = false;
 }
 
-void Shadow::ProcAlphaBlending(COORD* alignedShadowPos, RECT* blendingArea, CScreenDIB * backBuf)
+void Shadow::ProcAlphaBlending(Position* alignedShadowPos, RECT* blendingArea, CScreenDIB * backBuf)
 {
 	// 생성자에서 아예 1개 만들어두고 재사용 하게... 근본적으론 AnimStruct가 class가 되어야 함.
 	if (m_prevBlendedImg != nullptr)
@@ -105,7 +105,7 @@ void Shadow::ChangeShadowSprite(AnimStruct* shadowImg)
 	m_shadowImg = shadowImg;
 }
 
-COORD Shadow::GetCenterPos(void)
+Position Shadow::GetCenterPos(void)
 {
 	return m_shadowImg->centerPos;
 }

@@ -1,0 +1,289 @@
+#include "stdafx.h"
+#include "CStreamSQ.h"
+
+
+CStreamSQ::CStreamSQ()
+{
+	Initial(100);
+}
+
+CStreamSQ::CStreamSQ(int iBufferSize)
+{
+	Initial(iBufferSize);
+}
+
+
+CStreamSQ::~CStreamSQ()
+{
+	Release();
+}
+
+////////////////////////////////////////////////// PUBLIC //////////////////////////////////////////////////
+void CStreamSQ::ReCreateQueue(int size)
+{
+	Release();
+	Initial(size);
+}
+
+int CStreamSQ::GetBufferSize(void)
+{
+	return m_bufSize - 1;
+}
+
+int CStreamSQ::GetUseSize(void)
+{
+	return (m_bufSize - 1) - GetFreeSize();
+}
+
+int CStreamSQ::GetFreeSize(void)
+{
+	return ((m_bufSize - (m_writePos + 1)) + m_readPos) % m_bufSize;
+}
+
+int CStreamSQ::GetWriteableSizeAtOneTime(void)
+{
+	if (m_writePos >= m_readPos)
+	{
+		return m_bufSize - (m_writePos + 1);
+	}
+	return m_readPos - (m_writePos + 1);
+}
+
+int CStreamSQ::GetReadableSizeAtOneTime(void)
+{
+	if (m_readPos >= m_writePos)
+	{
+		return m_bufSize - (m_readPos + 1);
+	}
+	return  m_writePos - m_readPos;
+}
+
+int CStreamSQ::Enqueue(char *chpData, int iByteOfData)
+{
+	// 이 이상으로 빨라지려면
+	// 1. 소스 라인을 줄인다. (더 나은 로직 필요)
+	// 2. memcpy 성능을 올린다.
+	int writePos = m_writePos;
+	int readPos = m_readPos;
+	int bufSize = m_bufSize;
+
+	// 라인 부하량에서 삼항 연산보다 if문이 우세함. 조건적으로 if문이 더 빠름. 분기 예측과 관련 있는 것으로 보임.
+	// 삼항은 조건-참문-거짓문 모두 들어가서 그런 것으로 추측됨.
+	// https://code.i-harness.com/ko/q/1086a01  < 추측한 것과 비슷한 내용에 대해 실험된 글
+	int writableSize = 0;
+	if (writePos >= readPos)
+	{
+		writableSize = bufSize - (writePos + 1);
+	}
+	else
+	{
+		writableSize =readPos - (writePos + 1);
+	}
+
+	if (writableSize >= iByteOfData)	// 쓰려는 용량보다 여유공간이 많다면
+	{
+		memcpy_s(&m_queue[writePos + 1], iByteOfData, chpData, iByteOfData);
+		writePos += iByteOfData;
+		if (writePos >= bufSize - 1)
+		{
+			writePos -= bufSize;
+		}
+		m_writePos = writePos;
+		return iByteOfData;
+	}
+	else  // 오른쪽으로 한 번에 쓸 수 있는 여유 공간보다 더 많은 용량이 요구됨
+	{
+		// 일단 오른쪽에는 있는데로 다 씀
+		memcpy_s(&m_queue[writePos + 1], writableSize, chpData, writableSize);
+		writePos += writableSize;
+		if (writePos + 1 >= bufSize)
+		{
+			writePos -= bufSize;
+		}
+
+		int remainByte	= iByteOfData - writableSize;
+		int freeSize = 0;			// 남은 용량 재계산
+		if (writePos < readPos)
+		{
+			freeSize = readPos - (writePos + 1);
+		}
+		else
+		{
+			freeSize = bufSize - (writePos + 1);
+		}
+
+		if (freeSize == 0)	// 남은 용량이 없다면 종료
+		{
+			m_writePos = writePos;
+			return writableSize;
+		}
+
+		// 남은 용량이 있는데
+		if (remainByte > freeSize) // 남은 용량보다도 여전히 써야할 용량이 크다면
+		{
+			remainByte = freeSize; // 사용 가능한 용량까지만 씀
+		}
+		memcpy_s(&m_queue[writePos + 1], remainByte, &chpData[writableSize], remainByte);
+		writePos += remainByte;
+
+		m_writePos = writePos;
+		return remainByte + writableSize;
+	}
+}
+
+int CStreamSQ::Dequeue(char *chpDest, int iByteOfData)
+{
+	int readableSize = GetReadableSizeAtOneTime();
+	if (readableSize >= iByteOfData)
+	{
+		memcpy_s(chpDest, iByteOfData, &m_queue[(m_readPos + 1) % m_bufSize], iByteOfData);
+		RemoveData(iByteOfData);
+		return iByteOfData;
+	}
+	else
+	{
+		memcpy_s(chpDest, readableSize, &m_queue[(m_readPos + 1) % m_bufSize], readableSize);
+		RemoveData(readableSize);
+		int remainByte = iByteOfData - readableSize;
+		if (IsEmpty())
+		{
+			return readableSize;
+		}
+
+		int useSize = GetUseSize();
+		if (remainByte > useSize)
+		{
+			remainByte = useSize;
+		}
+		memcpy_s(&chpDest[readableSize], remainByte, &m_queue[(m_readPos + 1) % m_bufSize], remainByte);
+		RemoveData(remainByte);
+		return remainByte + readableSize;
+	}
+	return 0;
+}
+
+int CStreamSQ::Peek(char *chpDest, int iSize)
+{
+	int i;
+	int bufSize	= m_bufSize;
+	int front		= m_readPos;
+	for (i = 0; i < iSize; i++)
+	{
+		if (front == m_writePos)
+		{
+			return i;
+		}
+		front = (front + 1) % bufSize;
+		chpDest[i] = m_queue[front];
+	}
+	return i;
+}
+
+void CStreamSQ::RemoveData(int iByteOfData)
+{
+	int bufSize = m_bufSize;
+	for (int i = 0; i < iByteOfData; i++)
+	{
+		if (IsEmpty() == true)
+		{
+			return;
+		}
+		m_readPos = (m_readPos + 1) % bufSize;
+	}
+}
+
+int CStreamSQ::MoveWritePos(int iByteOfData)
+{
+	int bufSize	= m_bufSize;
+	int wPos		= m_writePos;
+	int rPos		= m_readPos;
+	int i			= 0;
+	int t;
+
+	for (; i < iByteOfData; i++)
+	{
+		if ((wPos + 1) >= bufSize)
+		{
+			wPos = 0;
+			t = bufSize - 1;
+		}
+		else
+		{
+			wPos++;
+			t = wPos;
+		}
+		if ((rPos == t) ? true : false)
+		{
+			break;
+		}
+	}
+	m_writePos = wPos;
+	return i;
+}
+
+void CStreamSQ::ClearBuffer(void)
+{
+	m_writePos = m_readPos = 0;
+}
+
+char* CStreamSQ::GetBufferPtr(void)
+{
+	return (char*)&m_queue[0];
+}
+
+char* CStreamSQ::GetReadBufferPtr(void)
+{
+	int front = (m_readPos + 1) % m_bufSize;
+	return (char*)&m_queue[front];
+}
+
+char* CStreamSQ::GetWriteBufferPtr(void)
+{
+	int rear = (m_writePos + 1) % m_bufSize;
+	return (char*)&m_queue[rear];
+}
+
+bool CStreamSQ::IsFull(INT wPos, INT rPos, INT bufSize)
+{
+	int t = wPos + 1;
+	if ((wPos + 1) >= bufSize)
+	{
+		t = bufSize - 1;
+	}
+
+	if (rPos == t)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool CStreamSQ::IsEmpty(void)
+{
+	return (m_readPos == m_writePos)? true : false;
+}
+
+////////////////////////////////////////////////// PRIVATE //////////////////////////////////////////////////
+void CStreamSQ::Initial(int iBufferSize)
+{
+	if (iBufferSize > 1)
+	{
+		m_bufSize = iBufferSize;
+	}
+	else
+	{
+		m_bufSize = 100;
+	}
+
+	m_queue = new BYTE[m_bufSize];
+	m_writePos = m_readPos = 0;
+}
+
+void CStreamSQ::Release(void)
+{
+	if (m_queue != nullptr)
+	{
+		delete[] m_queue;
+		m_queue = nullptr;
+	}
+}

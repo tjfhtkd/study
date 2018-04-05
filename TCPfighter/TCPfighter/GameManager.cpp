@@ -72,6 +72,21 @@ CGameBase* GameManager::PopObject(void)
 	return tmp;
 }
 
+CGameBase* GameManager::RemoveObject(INT targetObjID)
+{
+	CGameBase* target = nullptr;
+	for (auto begin = objects.begin(); begin != objects.end(); begin++)
+	{
+		if ((*begin)->ID == targetObjID)
+		{
+			target = *begin;
+			objects.erase(begin);
+			break;
+		}
+	}
+	return target;
+}
+
 std::vector<CGameBase*>::iterator GameManager::GetBegin(void)
 {
 	return objects.begin();
@@ -122,6 +137,11 @@ void GameManager::Release(void)
 
 void GameManager::KeyProcess(KeyMsg keyMsg)
 {
+	if (GameSystemInfo::GetInstance()->hWnd != GetFocus())
+	{
+		return;
+	}
+
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->KeyProcess(keyMsg);
@@ -130,6 +150,7 @@ void GameManager::KeyProcess(KeyMsg keyMsg)
 
 LONGLONG GameManager::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 {
+	SortBaseY(objects);
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->Update(deltaTime, m_backBuf, m_currUpdateCnt);
@@ -138,6 +159,24 @@ LONGLONG GameManager::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCou
 	PrintFPS(deltaTime);
 	m_currUpdateCnt++;
 	return timeGetTime();
+}
+
+void GameManager::SortBaseY(std::vector<CGameBase*>& objects)
+{
+	CGameBase* tmp;
+	int iMax = objects.size() - 1;
+	for (int i = 0; i < iMax; i++)
+	{
+		for (int j = i + 1; j < iMax + 1; j++)
+		{
+			if (objects[i]->position.Y > objects[j]->position.Y)
+			{
+				tmp = objects[i];
+				objects[i] = objects[j];
+				objects[j] = tmp;
+			}
+		}
+	}
 }
 
 void GameManager::Draw(CScreenDIB* dib)
@@ -232,5 +271,13 @@ void GameManager::CalcFrameSkip(LONGLONG deltaTime)
 		// 이런 경우 Sleep을 할 때 -n 값이 되어 무한루프에 빠진다.
 		m_deltaTime = deltaTime - FrameLimit;
 		m_accumulationDelay += m_deltaTime;
+	}
+}
+
+void GameManager::CommunicateNetwork(stPacket_ArgCollectionBox intendBox)
+{
+	for (int i = 0; i < objects.size(); i++)
+	{
+		objects[i]->CommunicateNetwork(intendBox);
 	}
 }

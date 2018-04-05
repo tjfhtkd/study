@@ -25,6 +25,7 @@ public:
 
 	void PushObject(CGameBase* obj);
 	CGameBase* PopObject(void);
+	CGameBase* RemoveObject(INT targetObjID);
 	std::vector<CGameBase*>::iterator GetBegin(void);
 	std::vector<CGameBase*>::iterator GetEnd(void);
 
@@ -36,11 +37,14 @@ public:
 	virtual void KeyProcess(KeyMsg keyMsg) override;
 	virtual LONGLONG Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount) override;
 	virtual void Draw(CScreenDIB* dib) override;
+	virtual void CommunicateNetwork(stPacket_ArgCollectionBox intendBox) override;
 
 private:
 	bool LoadBMPResources(ResourceStorage* resStore);
 	void PrintFPS(LONGLONG deltaTime);
 	void CalcFrameSkip(LONGLONG deltaTime);
+
+	void SortBaseY(std::vector<CGameBase*>& objects);
 
 ////////////////////////
 // MEMBER VAR  //

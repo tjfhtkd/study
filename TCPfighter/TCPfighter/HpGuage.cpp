@@ -47,7 +47,7 @@ LONGLONG HpGuage::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 	LONG right = m_HpGuageInfo->sprite->bmpInfoHeader->bmiHeader.biWidth;
 	LONG bottom = m_HpGuageInfo->sprite->bmpInfoHeader->bmiHeader.biHeight;
 	RECT clippingArea = {
-		0, 0, right, bottom
+		0, 0, double(right) / double(m_maxHP) * double(m_currHP), bottom
 	};
 
 	m_imgProcessor->Clipping(m_HpGuageInfo, nullptr, clippingArea, m_hpBarBackBuf, m_HpGuageInfo->colorKey);
@@ -67,7 +67,7 @@ LONGLONG HpGuage::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 	tmp->sprite->data	= (PIXEL*)tmpBuf;
 
 	// HP Guage 자체가 화면을 벗어난지 확인하기 위한 clipping
-	COORD alignedPos = Position;
+	Position alignedPos = position;
 	alignedPos.X -= m_HpGuageInfo->centerPos.X;
 	alignedPos.Y -= m_HpGuageInfo->centerPos.Y;
 	m_imgProcessor->Clipping(tmp, &alignedPos, GameSystemInfo::GetInstance()->WindowSize, dib, m_HpGuageInfo->colorKey);
@@ -84,6 +84,10 @@ void HpGuage::Draw(CScreenDIB* dib)
 {
 }
 
+void HpGuage::CommunicateNetwork(stPacket_ArgCollectionBox intendBox)
+{
+}
+
 //////////////////////////////////// Private ////////////////////////////////////
 bool HpGuage::GetDamaged(INT damage)
 {
@@ -95,18 +99,30 @@ bool HpGuage::GetDamaged(INT damage)
 	return false;
 }
 
-INT HpGuage::GeCurrentHP(void)
+INT HpGuage::GetCurrentHP(void)
 {
 	return m_currHP;
 }
 
-INT HpGuage::GeMaxHP(void)
+INT HpGuage::GetMaxHP(void)
 {
 	return m_maxHP;
 }
 
 void HpGuage::SetMaxHP(INT changedMaxHP)
 {
+	if (changedMaxHP > 0)
+	{
+		m_maxHP = changedMaxHP;
+	}
+}
+
+void HpGuage::SetCurrHP(INT changedCurrentHP)
+{
+	if (changedCurrentHP >= 0)
+	{
+		m_currHP = changedCurrentHP;
+	}
 }
 
 bool HpGuage::IsDead(void)
@@ -128,7 +144,7 @@ void HpGuage::ChangeHpSprite(AnimStruct* hpImg)
 	m_HpGuageInfo = hpImg;
 }
 
-COORD HpGuage::GetCenterPos(void)
+Position HpGuage::GetCenterPos(void)
 {
 	return m_HpGuageInfo->centerPos;
 }

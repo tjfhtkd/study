@@ -19,6 +19,24 @@
     <Filter Include="Object">
       <UniqueIdentifier>{4274f792-3e6c-4ae7-8bb2-aab8b5aae4dc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Util\RingBuffer">
+      <UniqueIdentifier>{3f7c04ef-3435-41b9-afda-702ac064b436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util\BitmapProcess">
+      <UniqueIdentifier>{d2f80d21-a541-4b85-9166-23bb73104b0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util\BackBuffer">
+      <UniqueIdentifier>{fdf2779f-86ba-44bc-9a45-b120fbcb03cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util\AnimationProcess">
+      <UniqueIdentifier>{825a2c03-f3cf-4dca-87d9-a1c1bdab1476}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameProtocol">
+      <UniqueIdentifier>{28ab5a7c-37b1-4fd3-a3fb-024bff66d0f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Util\Network">
+      <UniqueIdentifier>{822c98c0-47e4-4df8-8545-22975df21c49}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -36,21 +54,6 @@
     <ClInclude Include="GameSystemInfo.h">
       <Filter>Util</Filter>
     </ClInclude>
-    <ClInclude Include="BitmapLoader.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="DataStructures.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="CScreenDIB.h">
-      <Filter>Util</Filter>
-    </ClInclude>
-    <ClInclude Include="Constants.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ImageProcessor.h">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="GameManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -63,14 +66,56 @@
     <ClInclude Include="Player.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>Util</Filter>
-    </ClInclude>
     <ClInclude Include="HpGuage.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="Shadow.h">
+    <ClInclude Include="CStreamSQ.h">
+      <Filter>Util\RingBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="BitmapLoader.h">
+      <Filter>Util\BitmapProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageProcessor.h">
+      <Filter>Util\BitmapProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="CScreenDIB.h">
+      <Filter>Util\BackBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Util\AnimationProcess</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>GameProtocol</Filter>
+    </ClInclude>
+    <ClInclude Include="DataStructures.h">
+      <Filter>GameProtocol</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketDefine.h">
+      <Filter>GameProtocol</Filter>
+    </ClInclude>
+    <ClInclude Include="INetReactor.h">
+      <Filter>Util\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetConnector.h">
+      <Filter>Util\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NetProcessor.h">
+      <Filter>Util\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketAnalyzer.h">
+      <Filter>Util\Network</Filter>
+    </ClInclude>
+    <ClInclude Include="GameNetReactor.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="OtherPlayer.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Shadow.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="NetMessenger.h">
+      <Filter>Util\Network</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -78,18 +123,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="GameSystemInfo.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="BitmapLoader.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="CScreenDIB.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="Constants.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ImageProcessor.cpp">
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="GameManager.cpp">
@@ -104,20 +137,50 @@
     <ClCompile Include="Player.cpp">
       <Filter>Object</Filter>
     </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Util</Filter>
-    </ClCompile>
-    <ClCompile Include="DataStructures.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="TCPfighter.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="HpGuage.cpp">
       <Filter>Object</Filter>
     </ClCompile>
-    <ClCompile Include="Shadow.cpp">
+    <ClCompile Include="CStreamSQ.cpp">
+      <Filter>Util\RingBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="BitmapLoader.cpp">
+      <Filter>Util\BitmapProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageProcessor.cpp">
+      <Filter>Util\BitmapProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="CScreenDIB.cpp">
+      <Filter>Util\BackBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Util\AnimationProcess</Filter>
+    </ClCompile>
+    <ClCompile Include="Constants.cpp">
+      <Filter>GameProtocol</Filter>
+    </ClCompile>
+    <ClCompile Include="NetProcessor.cpp">
+      <Filter>Util\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="NetConnector.cpp">
+      <Filter>Util\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketAnalyzer.cpp">
+      <Filter>Util\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="GameNetReactor.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="OtherPlayer.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Shadow.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="NetMessenger.cpp">
+      <Filter>Util\Network</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,7 @@
 #pragma once
+
+#include "DataStructures.h"
+
 class Shadow
 {
 public:
@@ -6,14 +9,14 @@ public:
 	virtual ~Shadow();
 
 public:
-	void ProcAlphaBlending(COORD* alignedShadowPos, RECT* blendingArea, CScreenDIB* backBuf);
+	void ProcAlphaBlending(Position* alignedShadowPos, RECT* blendingArea, CScreenDIB* backBuf);
 	AnimStruct* GetBlendedImg(void);
 	AnimStruct* GetNormalImg(void);
 	void ChangeShadowSprite(AnimStruct* shadowImg);
-	COORD GetCenterPos(void);
+	Position GetCenterPos(void);
 
 public:
-	COORD	Position;
+	Position	position;
 	bool		On;
 
 private:

@@ -24,7 +24,7 @@ Animation::~Animation()
 
 //////////////////////// Public ////////////////////////
 
-AnimStruct* Animation::MakeAnimationStruct(KsDIB* image, INT frameDelay, COORD centerPos)
+AnimStruct* Animation::MakeAnimationStruct(KsDIB* image, INT frameDelay, Position centerPos)
 {
 	AnimStruct* tmp = (AnimStruct*)malloc(sizeof(AnimStruct));
 	tmp->sprite = image;

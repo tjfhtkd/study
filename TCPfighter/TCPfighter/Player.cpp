@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "HpGuage.h"
 #include "Shadow.h"
+#include "NetMessenger.h"
+#include "PacketDefine.h"
 #include "Player.h"
-
 
 Player::Player(HpGuage* hpGuage, ImageProcessor* imageProcessor)
 {
@@ -68,43 +69,180 @@ void Player::SetEffect(Animation* effectAnim)
 	}
 }
 
+void Player::SetMessenger(NetMessenger* messenger)
+{
+	m_messenger = messenger;
+}
+
+// 거지같은 코드가 됨. 오로지 DO NOTHING을 체크하기 위해 overrappedKeyMsg를 받게됨.
+// 애초에 서버에서 원하는 패킷 생성에 맞는 키처리가 되는게 더 깔끔할 것 같음.
+// 문제는 그렇게 되면 너무 종속적인 코드가 되버림.
+// 1. 그냥 그렇게 한다.
+// 2. 범용적인 키처리를 한다.
+//		-> 키 변경 상태를 감지 할 수 있는 녀석, 아무 키도 안누른 것 역시 상태의 변화임.
+void Player::SendActionPacket(int overrappedKeyMsg, Status prevStatus, Status currStatus)
+{
+	// 이전 상태와 변경된 상태가 달라졌으면 send
+	// 무브 -> 공격  (무브 -> 멈춤 -> 공격)
+	// 무브 -> 멈춤
+	// ㅅi bㅏㄹ  gㅓ지  cㅗ드
+	switch (currStatus)
+	{
+	case Player::Status::MOVE_L:
+	case Player::Status::MOVE_UPLEFT:
+	case Player::Status::MOVE_UP:
+	case Player::Status::MOVE_UPRIGHT:
+	case Player::Status::MOVE_R:
+	case Player::Status::MOVE_DOWN_RIGHT:
+	case Player::Status::MOVE_DOWN:
+	case Player::Status::MOVE_DOWN_LEFT:
+		if (currStatus != prevStatus)
+		{
+			AssemblePacket(dfPACKET_CS_MOVE_START, currStatus);
+			m_messenger->SendMsg(GameSystemInfo::GetInstance()->ServerSock);
+		}
+		break;
+
+	case Player::Status::STAND_R:
+	case Player::Status::STAND_L:
+		if (currStatus != prevStatus)
+		{
+			int dirStatus = (currStatus == Status::STAND_R) ? dfPACKET_MOVE_DIR_RR : dfPACKET_MOVE_DIR_LL;
+			AssemblePacket(dfPACKET_CS_MOVE_STOP, (Status)dirStatus);
+			m_messenger->SendMsg(GameSystemInfo::GetInstance()->ServerSock);
+		}
+		break;
+
+	case Player::Status::ATTACK_ZAP_R:
+	case Player::Status::ATTACK_ZAP_L:
+	{
+		int dirStatus = (currStatus == Status::ATTACK_ZAP_R) ? dfPACKET_MOVE_DIR_RR : dfPACKET_MOVE_DIR_LL;
+		switch (prevStatus)
+		{
+		case Player::Status::MOVE_L:
+		case Player::Status::MOVE_UPLEFT:
+		case Player::Status::MOVE_UP:
+		case Player::Status::MOVE_UPRIGHT:
+		case Player::Status::MOVE_R:
+		case Player::Status::MOVE_DOWN_RIGHT:
+		case Player::Status::MOVE_DOWN:
+		case Player::Status::MOVE_DOWN_LEFT:
+		{
+			AssemblePacket(dfPACKET_CS_MOVE_STOP, (Status)dirStatus);
+			//break;
+		}
+		default:
+			break;
+		}
+		AssemblePacket(dfPACKET_CS_ATTACK1, (Status)dirStatus);
+		m_messenger->SendMsg(GameSystemInfo::GetInstance()->ServerSock);
+		break;
+	}
+
+	case Player::Status::ATTACK_PAUNCH_R:
+	case Player::Status::ATTACK_PAUNCH_L:
+	{
+		int dirStatus = (currStatus == Status::ATTACK_PAUNCH_R) ? dfPACKET_MOVE_DIR_RR : dfPACKET_MOVE_DIR_LL;
+		switch (prevStatus)
+		{
+		case Player::Status::MOVE_L:
+		case Player::Status::MOVE_UPLEFT:
+		case Player::Status::MOVE_UP:
+		case Player::Status::MOVE_UPRIGHT:
+		case Player::Status::MOVE_R:
+		case Player::Status::MOVE_DOWN_RIGHT:
+		case Player::Status::MOVE_DOWN:
+		case Player::Status::MOVE_DOWN_LEFT:
+		{
+			AssemblePacket(dfPACKET_CS_MOVE_STOP, (Status)dirStatus);
+			//break;
+		}
+		default:
+			break;
+		}
+		AssemblePacket(dfPACKET_CS_ATTACK2, (Status)dirStatus);
+		m_messenger->SendMsg(GameSystemInfo::GetInstance()->ServerSock);
+		break;
+	}
+
+	case Player::Status::ATTACK_KICK_R:
+	case Player::Status::ATTACK_KICK_L:
+	{
+		int dirStatus = (currStatus == Status::ATTACK_KICK_R) ? dfPACKET_MOVE_DIR_RR : dfPACKET_MOVE_DIR_LL;
+		switch (prevStatus)
+		{
+		case Player::Status::MOVE_L:
+		case Player::Status::MOVE_UPLEFT:
+		case Player::Status::MOVE_UP:
+		case Player::Status::MOVE_UPRIGHT:
+		case Player::Status::MOVE_R:
+		case Player::Status::MOVE_DOWN_RIGHT:
+		case Player::Status::MOVE_DOWN:
+		case Player::Status::MOVE_DOWN_LEFT:
+		{
+			AssemblePacket(dfPACKET_CS_MOVE_STOP, (Status)dirStatus);
+			//break;
+		}
+		default:
+			break;
+		}
+		AssemblePacket(dfPACKET_CS_ATTACK3, (Status)dirStatus);
+		m_messenger->SendMsg(GameSystemInfo::GetInstance()->ServerSock);
+	}
+		break;
+
+	default:
+		break;
+	}
+}
+
+void Player::AssemblePacket(int packetType, Status currStatus)
+{
+	stPacket_ArgCollectionBox intendBox;
+	intendBox.ID = ID;
+	intendBox.PacketType = packetType;
+	intendBox.Direction = (int)currStatus;	// 패킷 번호랑 억지로 껴맞춘 enum class임. 거지같은새퀴
+	intendBox.X = position.X;
+	intendBox.Y = position.Y;
+	m_messenger->SaveSendMsg(&intendBox);
+}
+
 void Player::Move(Status moveStatus)
 {
 	switch (moveStatus)
 	{
 	case Player::Status::MOVE_UP:
-		Position.Y -= 2;
+		position.Y -= 2;
 		break;
 	case Player::Status::MOVE_UPLEFT:
-		Position.Y -= 2;
-		Position.X -= 3;
+		position.Y -= 2;
+		position.X -= 3;
 		break;
 	case Player::Status::MOVE_UPRIGHT:
-		Position.Y -= 2;
-		Position.X += 3;
+		position.Y -= 2;
+		position.X += 3;
 		break;
 	case Player::Status::MOVE_DOWN:
-		Position.Y += 2;
+		position.Y += 2;
 		break;
 	case Player::Status::MOVE_DOWN_LEFT:
-		Position.Y += 2;
-		Position.X -= 3;
+		position.Y += 2;
+		position.X -= 3;
 		break;
 	case Player::Status::MOVE_DOWN_RIGHT:
-		Position.Y += 2;
-		Position.X += 3;
+		position.Y += 2;
+		position.X += 3;
 		break;
 	case Player::Status::MOVE_R:
-		Position.X += 3;
+		position.X += 3;
 		break;
 	case Player::Status::MOVE_L:
-		Position.X -= 3;
+		position.X -= 3;
 		break;
 	default:
 		break;
 	}
-
-	CheckOutOfPlayArea(Position);
+	CheckOutOfPlayArea(position);
 }
 
 void Player::Attack(Status attackStatus)
@@ -129,13 +267,14 @@ void Player::Attack(Status attackStatus)
 bool Player::Initialize(void)
 {
 	m_effectStartFrameNum = -1;
-	m_bAttack		= false;
+	m_bAttack = false;
 	m_prevDirection = LookDirection::LEFT_STAND;
 	m_currentStatus = Status::STAND_L;
 	if (m_imgProcessor == nullptr)
 	{
 		return false;
 	}
+	Hp->Initialize();
 	return true;
 }
 
@@ -152,6 +291,8 @@ void Player::Release(void)
 		delete m_shadow;
 		m_shadow = nullptr;
 	}
+
+	Hp->Release();
 }
 void Player::KeyProcess(KeyMsg keyMsg)
 {
@@ -180,8 +321,11 @@ void Player::KeyProcess(KeyMsg keyMsg)
 	// 이유? 마스킹 하려고
 	int overrappedKeyMsg				= MakeOverrapedKeyMsg();
 	LookDirection currentDirection	= GetLookDirection(overrappedKeyMsg, m_prevDirection);
-	DeterminePlayAnimation(overrappedKeyMsg, currentDirection);
 	
+	m_prevStatus = m_currentStatus;
+	DeterminePlayAnimation(overrappedKeyMsg, currentDirection);
+	SendActionPacket(overrappedKeyMsg, m_prevStatus, m_currentStatus);
+
 	this->Move(m_currentStatus);
 	this->Attack((Status)m_currentStatus);
 
@@ -190,32 +334,43 @@ void Player::KeyProcess(KeyMsg keyMsg)
 
 LONGLONG Player::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 {
+	Hp->Update(deltaTime, dib, frameCount);
+
 	// 이젠 귀찮음.. 시간도 없음.. 여기는 이제 다 때려넣어지는 구간임.
 	Animation* anim = animations[(int)m_currentStatus];
 	anim->Play(frameCount);
 	AnimStruct* animImg = anim->GetCurrentSprite();
-	COORD alignedPos = this->Position;
+	Position alignedPos = this->position;
 	alignedPos.X -= animImg->centerPos.X;
 	alignedPos.Y -= animImg->centerPos.Y;
 	
 	// LONG -> SHORT 해도 문제 없을까?
 	// 이미지가 겁나게 초 고해상도였다면??
 	// HP 출력 좌표 계산						<- 얘는 왜 중점좌표 0으로 줬지..?
-	COORD alignedHPPos = Position;
+	Position alignedHPPos = position;
 	alignedHPPos.X -= Hp->GetCenterPos().X + 30;
 	alignedHPPos.Y -= Hp->GetCenterPos().Y - 10;
-	Hp->Position = alignedHPPos;
+	Hp->position = alignedHPPos;
 
 	if (m_shadow->On == true)
 	{
 		// 그림자 출력 좌표 계산
-		COORD alignedShadowPos = Position;
-		alignedShadowPos.X -= m_shadow->GetCenterPos().X;
+		Position alignedShadowPos = position;
+		// 서버에 붙이면서 좌표가 unsigned로 변경됨. 음수일 때 overflow 대책용. y값도 해야하나..?
+		int signCorrectionX = int(position.X) - int(m_shadow->GetCenterPos().X);
+		if (signCorrectionX < 0)
+		{
+			alignedShadowPos.X = 0;
+		}
+		else
+		{
+			alignedShadowPos.X -= m_shadow->GetCenterPos().X;
+		}
 		alignedShadowPos.Y -= m_shadow->GetCenterPos().Y;
-		m_shadow->Position = alignedShadowPos;
+		m_shadow->position = alignedShadowPos;
 
 		// 그림자랑 캐릭터 겹치는 부분 블렌딩 할 좌표값 계산하기
-		COORD blendingStartPos = { alignedPos.X, alignedPos.Y };
+		Position blendingStartPos = { alignedPos.X, alignedPos.Y };
 		RECT blendingArea = { 0								//left
 			, 0														//top
 			, animImg->sprite->bmpInfoHeader->bmiHeader.biWidth		//right
@@ -229,7 +384,7 @@ LONGLONG Player::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 		}
 	}
 
-	///*
+	/*
 	// START : 좌표 계산 확인용 코드
 	if (alignedPos.X >= 0)
 	{
@@ -307,7 +462,6 @@ LONGLONG Player::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 
 void Player::Draw(CScreenDIB* dib)
 {
-	// Noting to do.
 }
 
 /////////////////////////////// Private ///////////////////////////////
@@ -476,22 +630,22 @@ void Player::DeterminePlayAnimation(int overrappedKeyMsg, LookDirection currentD
 		if (overrappedKeyMsg == (int)KeyMsg::ATK_KICK)
 		{
 			m_currentStatus = Status::ATTACK_KICK_L;
-			m_effectStartPos.X = Position.X - 135;
-			m_effectStartPos.Y = Position.Y - 135;
+			m_effectStartPos.X = position.X - 135;
+			m_effectStartPos.Y = position.Y - 135;
 			m_effectStartFrameNum = 10;
 		}
 		else if (overrappedKeyMsg == (int)KeyMsg::ATK_ZAP)
 		{
 			m_currentStatus = Status::ATTACK_ZAP_L;
-			m_effectStartPos.X = Position.X - 130;
-			m_effectStartPos.Y = Position.Y - 140;
+			m_effectStartPos.X = position.X - 130;
+			m_effectStartPos.Y = position.Y - 140;
 			m_effectStartFrameNum = 1;
 		}
 		else if(overrappedKeyMsg == (int)KeyMsg::ATK_PAUNCH)
 		{
 			m_currentStatus = Status::ATTACK_PAUNCH_L;
-			m_effectStartPos.X = Position.X - 130;
-			m_effectStartPos.Y = Position.Y - 135;
+			m_effectStartPos.X = position.X - 130;
+			m_effectStartPos.Y = position.Y - 135;
 			m_effectStartFrameNum = 5;
 		}
 		else {
@@ -504,22 +658,22 @@ void Player::DeterminePlayAnimation(int overrappedKeyMsg, LookDirection currentD
 		if (overrappedKeyMsg == (int)KeyMsg::ATK_KICK)
 		{
 			m_currentStatus = Status::ATTACK_KICK_R;
-			m_effectStartPos.X = Position.X;
-			m_effectStartPos.Y = Position.Y - 135;
+			m_effectStartPos.X = position.X;
+			m_effectStartPos.Y = position.Y - 135;
 			m_effectStartFrameNum = 10;
 		}
 		else if (overrappedKeyMsg == (int)KeyMsg::ATK_ZAP)
 		{
 			m_currentStatus = Status::ATTACK_ZAP_R;
-			m_effectStartPos.X = Position.X;
-			m_effectStartPos.Y = Position.Y - 140;
+			m_effectStartPos.X = position.X;
+			m_effectStartPos.Y = position.Y - 140;
 			m_effectStartFrameNum = 1;
 		}
 		else if (overrappedKeyMsg == (int)KeyMsg::ATK_PAUNCH)
 		{
 			m_currentStatus = Status::ATTACK_PAUNCH_R;
-			m_effectStartPos.X = Position.X;
-			m_effectStartPos.Y = Position.Y - 135;
+			m_effectStartPos.X = position.X;
+			m_effectStartPos.Y = position.Y - 135;
 			m_effectStartFrameNum = 5;
 		}
 		else {
@@ -533,7 +687,7 @@ void Player::DeterminePlayAnimation(int overrappedKeyMsg, LookDirection currentD
 	
 }
 
-void Player::CheckOutOfPlayArea(COORD& position)
+void Player::CheckOutOfPlayArea(Position& position)
 {
 	auto area = GameSystemInfo::GetInstance()->GamePlayArea;
 	if (position.X <= area.left)
@@ -560,5 +714,16 @@ void Player::CheckOutOfPlayArea(COORD& position)
 	else
 	{
 		// Can moving.
+	}
+}
+
+void Player::CommunicateNetwork(stPacket_ArgCollectionBox intendBox)
+{
+	if (intendBox.DamageID == ID)
+	{
+		if (intendBox.PacketType == dfPACKET_SC_DAMAGE)
+		{
+			Hp->SetCurrHP(intendBox.HP);
+		}
 	}
 }

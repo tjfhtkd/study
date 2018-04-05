@@ -57,7 +57,7 @@ KsDIB* ImageProcessor::ReverseBmpData(KsDIB* target)
 }
 
 // 손 좀 많이 봐야할 듯
-void ImageProcessor::Clipping(OUT AnimStruct* target, IN COORD* targetPos, IN RECT clippingArea, OUT CScreenDIB* dibBuf, IN PIXEL colorKey)
+void ImageProcessor::Clipping(OUT AnimStruct* target, IN Position* targetPos, IN RECT clippingArea, OUT CScreenDIB* dibBuf, IN PIXEL colorKey)
 {
 	PIXEL* buf = (PIXEL*)((void*)dibBuf->GetDibBuffer());
 	LONG nextLineTerm = dibBuf->GetPitch() / sizeof(PIXEL);
@@ -131,7 +131,7 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN COORD* targetPos, IN RE
 	}
 }
 
-bool ImageProcessor::AlphaBlending(OUT AnimStruct* target, IN COORD* blendingStartPos, IN RECT* blendingArea, IN PIXEL colorKey, OUT CScreenDIB* dibBuf)
+bool ImageProcessor::AlphaBlending(OUT AnimStruct* target, IN Position* blendingStartPos, IN RECT* blendingArea, IN PIXEL colorKey, OUT CScreenDIB* dibBuf)
 {
 	if (dibBuf == nullptr || target == nullptr)
 	{
