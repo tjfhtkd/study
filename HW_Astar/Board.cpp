@@ -27,6 +27,9 @@ Board::Board(UINT boardWidth, UINT boardHeight, UINT horizontalGridCount, UINT v
 
 	m_horizontalGridTermSize = boardHeight / horizontalGridCount;
 	m_verticalGridTermSize = boardWidth / verticalGridCount;
+	
+	FLOAT centerPosX = (boardHeight / horizontalGridCount) / 2;
+	FLOAT centerPosY = (boardWidth / verticalGridCount) / 2;
 
 	m_grid = (MapData**)malloc(sizeof(MapData) * horizontalGridCount);
 	for (int i = 0; i < horizontalGridCount; i++)
@@ -37,6 +40,8 @@ Board::Board(UINT boardWidth, UINT boardHeight, UINT horizontalGridCount, UINT v
 			m_grid[i][j].color = defaultColor;
 			m_grid[i][j].idxX = i;
 			m_grid[i][j].idxY = j;
+			m_grid[i][j].mapNode.X = centerPosX * (i + 1);
+			m_grid[i][j].mapNode.Y = centerPosY * (i + 1);
 		}
 	}
 }

@@ -152,6 +152,7 @@
     <ClInclude Include="CScreenDIB.h" />
     <ClInclude Include="DataStructures.h" />
     <ClInclude Include="HW_Astar.h" />
+    <ClInclude Include="JPSAlgorithm.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -161,6 +162,7 @@
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="CScreenDIB.cpp" />
     <ClCompile Include="HW_Astar.cpp" />
+    <ClCompile Include="JPSAlgorithm.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

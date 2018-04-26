@@ -29,10 +29,10 @@ typedef struct Bitmap {
 	LONG						pitch;		// KsDIB Use Only	->malloc 할당 방식에서 힌트 얻은 기법.
 } BMP;
 
-typedef struct AstarNode
+typedef struct PathFindingNode
 {
-	/*FLOAT X;
-	FLOAT Y;*/
+	FLOAT X;
+	FLOAT Y;
 	INT G;
 	INT H;
 	INT F;
@@ -44,5 +44,6 @@ typedef struct GridElement
 	Node mapNode;
 	INT idxX;
 	INT idxY;
+	void* optionalData;			// 추가 자료를 위해 만들었음. void* 타입? 네가 넣은 타입이니 네가 알겠지.
 	PIXEL color;
 } MapData;
