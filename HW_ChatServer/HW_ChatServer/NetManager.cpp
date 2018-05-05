@@ -49,7 +49,7 @@ bool NetManager::Connect(void)
 	// 다 같은 로직으로 되지 않을까 싶음.
 
 	// 리슨 소켓까지 성공적으로 맵에 등록이 되어야 유저가 유입 가능하므로 AddSession의 성공 여부 반환
-	return AddSession(CreateGUID(), m_conn->GetListenSocket(), L"LISTEN_SOCK");
+	return AddSession(m_conn->GetListenSocket(), L"LISTEN_SOCK");
 }
 
 void NetManager::StartLoop(void)
@@ -86,20 +86,23 @@ void NetManager::StartLoop(void)
 
 bool NetManager::AddSession(SOCKET sock, const WCHAR nickName[dfNICK_MAX_LEN])
 {
-	if (IsAlreadyExistStrKeyIn(nicknameChecker, nickName) == true)
+	if (nickName == nullptr)
 	{
-		return false;
+		CreateSession(sock);
 	}
-	DWORD uid = CreateGUID();
-	kks::Session* session = (kks::Session*)malloc(sizeof(kks::Session));
-	ZeroMemory(session, sizeof(kks::Session));
-	session->uid = uid;
-	session->sock = sock;
-	wmemcpy_s(session->nickName, dfNICK_MAX_LEN, nickName, dfNICK_MAX_LEN);
-
-	sessions[uid]						= session;
-	socketChecker[sock]			= session;
-	nicknameChecker[nickName]	= uid;
+	else
+	{
+		if (IsAlreadyExistStrKeyIn(nicknameChecker, nickName) == true)
+		{
+			return false;
+		}
+		else
+		{
+			kks::Session* session = CreateSession(sock);
+			wmemcpy_s(session->nickName, dfNICK_MAX_LEN, nickName, dfNICK_MAX_LEN);
+			nicknameChecker[nickName] = socketChecker[sock]->uid;
+		}
+	}
 	return true;
 }
 
@@ -214,4 +217,22 @@ DWORD NetManager::CreateGUID(void)
 DWORD NetManager::CreateGRID(void)
 {
 	return ++next_RoomID;
+}
+
+inline kks::Session* NetManager::CreateSession(SOCKET sock)
+{
+	kks::Session* session = socketChecker[sock];
+	if (session == nullptr)
+	{
+		DWORD uid	= CreateGUID();
+		session		= (kks::Session*)malloc(sizeof(kks::Session));
+
+		ZeroMemory(session, sizeof(kks::Session));
+		session->sock	= sock;
+		session->uid		= uid;
+
+		socketChecker[sock]	= session;
+		sessions[uid]				= session;
+	}
+	return session;
 }

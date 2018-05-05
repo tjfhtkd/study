@@ -25,7 +25,7 @@ void NetPacketProcessor::ProcessSessionRequest(std::list<kks::Session*>& rSessio
 			{
 				continue;
 			}
-			netMng->AddSession();
+			netMng->AddSession(client, nullptr);
 		}
 		else
 		{
@@ -33,8 +33,9 @@ void NetPacketProcessor::ProcessSessionRequest(std::list<kks::Session*>& rSessio
 			{
 				continue;
 			}
-		}
 
+		}
+		localBuf.ClearBuffer();
 	}
 }
 

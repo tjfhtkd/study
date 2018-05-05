@@ -13,7 +13,11 @@ public:
 	bool Connect(void);
 	void StartLoop(void);
 	
-	// 로그인 시도할 때 이거 호출. true이면 성공적으로 로긴, 실패하면 false 반환
+	/**
+	@param	SOCKET	$sock 세션에 등록할 socket
+	@param	const WCHAR[]	$nickName	nullptr은 닉네임이 없는 상태로 추가, 있다면 닉네임을 등록하면서 추가
+	@return	bool	true는 성공적으로 추가된 경우, false는 닉네임이 이미 사용중이라서 추가할 수 없는 경우다.
+	*/
 	bool AddSession(SOCKET sock, const WCHAR nickName[dfNICK_MAX_LEN]);
 
 public:
@@ -44,6 +48,8 @@ private:
 	template <class V>
 	bool IsAlreadyExistStrKeyIn(std::unordered_map<std::wstring, V>& map, std::wstring key);
 
+	inline kks::Session* CreateSession(SOCKET sock);
+
 private:
 	DWORD next_UID;			// 일단 ID 리셋 주기가 빠르다 가정하고 그냥 DWORD++ 하도록 함.
 	DWORD next_RoomID;		// 나중에 GUID_32BIT 개념 넣어서 바꿀거임.
@@ -52,9 +58,10 @@ private:
 	NetPacketProcessor*	m_netPacketProcessor;
 
 	std::unordered_map<DWORD, kks::Session*>	sessions;
-	std::unordered_map<DWORD, kks::Room*>	rooms;
-	std::unordered_map<std::wstring, DWORD>	nicknameChecker;
 	std::unordered_map<SOCKET, kks::Session*>	socketChecker;
+	std::unordered_map<std::wstring, DWORD>	nicknameChecker;
+
+	std::unordered_map<DWORD, kks::Room*>	rooms;
 };
 
 

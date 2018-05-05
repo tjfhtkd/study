@@ -110,6 +110,14 @@ public:
 	bool IsFull(INT wPos, INT rPos, INT bufSize);
 	bool IsEmpty(void);
 
+	template<class T>
+	friend CStreamSQ& operator>> (CStreamSQ& obj, T data);
+
+	friend CStreamSQ& operator>> (CStreamSQ& obj, std::string* data);
+
+	template<class T>
+	friend CStreamSQ& operator<< (CStreamSQ& obj, T& out_data);
+
 private:
 	void	Initial(int iBufferSize);
 	void	Release(void);
@@ -120,3 +128,26 @@ private:
 	INT		m_writePos;	// rear
 	BYTE*		m_queue;
 };
+
+
+
+template<class T>
+inline CStreamSQ& operator>>(CStreamSQ& obj, T data)
+{
+	obj.Enqueue(data, sizeof(data));
+	return obj;
+}
+
+template<>
+inline CStreamSQ & operator>>(CStreamSQ & obj, std::string* data)
+{
+	obj.Enqueue((char*)data->c_str(), sizeof(data->length()));
+	return obj;
+}
+
+template<class T>
+inline CStreamSQ& operator<<(CStreamSQ& obj, T& out_data)
+{
+	obj.Dequeue(data, sizeof(data));
+	return obj;
+}
