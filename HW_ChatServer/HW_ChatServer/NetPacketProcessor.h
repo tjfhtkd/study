@@ -32,7 +32,7 @@ public:
 
 	// 대화방 퇴장
 	bool RequestExitRoom();
-	bool ResponseExitRoom();
+	bool ResponseExitRoom(kks::Session* leavingSession);
 
 	// 채팅 메시지 송신/수신
 	bool RequestSendMsg();
@@ -42,10 +42,27 @@ public:
 	bool ResponseUserEnter();
 
 private:
-	bool CheckHeader(CStreamSQ& buf);
-	bool IsNormalityChecksum(st_PACKET_HEADER& header);
+	/*bool CheckHeader(CStreamSQ& buf);
+	bool IsNormalityChecksum(st_PACKET_HEADER& header);*/
 	SOCKET Accept(SOCKET listenSock);
+
+	template<class T>
+	DWORD MakeCheckSum(T data);
 
 private:
 	NetManager* m_netMng;
 };
+
+
+template<class T>
+DWORD NetPacketProcessor::MakeCheckSum(T data)
+{
+	DWORD checkSum = 0;
+	unsigned char* cursor = (unsigned char*)&data;
+	for (int i = 0; i < sizeof(T); i++) {
+
+		checkSum += *cursor;
+		cursor++;
+	}
+	return checkSum;
+}

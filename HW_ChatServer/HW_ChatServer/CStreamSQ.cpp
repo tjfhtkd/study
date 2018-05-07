@@ -262,6 +262,19 @@ bool CStreamSQ::IsEmpty(void)
 	return (m_readPos == m_writePos)? true : false;
 }
 
+CStreamSQ& CStreamSQ::operator<<(CStreamSQ& obj)
+{
+	int readSize;
+	int dataSize = obj.GetUseSize();
+	char buf[1024];
+	while (dataSize > 0)
+	{
+		readSize = obj.Dequeue(buf, 1024);
+		dataSize -= readSize;
+		this->Enqueue(buf, readSize);
+	}
+}
+
 ////////////////////////////////////////////////// PRIVATE //////////////////////////////////////////////////
 void CStreamSQ::Initial(int iBufferSize)
 {

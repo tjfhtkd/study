@@ -106,6 +106,27 @@ bool NetManager::AddSession(SOCKET sock, const WCHAR nickName[dfNICK_MAX_LEN])
 	return true;
 }
 
+void NetManager::RemoveSession(kks::Session* session)
+{
+	sessions.erase(session->uid);
+	socketChecker.erase(session->sock);
+	nicknameChecker.erase(session->nickName);
+	rooms.erase(session->roomNo);
+	closesocket(session->sock);
+	delete session;
+	session = nullptr;
+}
+
+kks::Room* NetManager::GetRoomInfo(DWORD roomID)
+{
+	return rooms[roomID];
+}
+
+kks::Session* NetManager::GetSession(DWORD uid)
+{
+	return sessions[uid];
+}
+
 void NetManager::DeployFdSet(FD_SET& rSet, FD_SET& wSet, std::list<kks::Session*>& sessions)
 {
 	FD_ZERO(&rSet);

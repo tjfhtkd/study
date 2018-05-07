@@ -19,6 +19,10 @@ public:
 	@return	bool	true는 성공적으로 추가된 경우, false는 닉네임이 이미 사용중이라서 추가할 수 없는 경우다.
 	*/
 	bool AddSession(SOCKET sock, const WCHAR nickName[dfNICK_MAX_LEN]);
+	void RemoveSession(kks::Session* session);
+
+	kks::Room* GetRoomInfo(DWORD roomID);
+	kks::Session* GetSession(DWORD uid);
 
 public:
 	bool IsServerRun;

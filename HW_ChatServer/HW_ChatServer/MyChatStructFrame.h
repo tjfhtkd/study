@@ -22,9 +22,8 @@ namespace kks
 
 	struct Room
 	{
-		INT		chatterCnt;
-		INT		maxChatterCnt;
 		DWORD	roomNo;
+		WCHAR	roomTitle[128];
 		INT		chatterMaxCnt;
 		INT		chatterJoinCnt;
 		INT		uidList[dfMAX_ROOM_CHATTER];
