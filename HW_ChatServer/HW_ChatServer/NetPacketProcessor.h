@@ -12,8 +12,8 @@ public:
 	void ProcessSessionRequest(std::list<kks::Session*>& rSessions, std::list<kks::Session*>& wSessions);
 	
 	// 로그인
-	bool RequestLogIn();
-	bool ResponseLogIn();
+	//bool RequestLogIn();		// 딱히 할게 없음
+	void ResponseLogIn(kks::Session& session);
 
 	// 대화방 목록
 	bool RequestRoomList();
@@ -42,9 +42,9 @@ public:
 	bool ResponseUserEnter();
 
 private:
-	/*bool CheckHeader(CStreamSQ& buf);
-	bool IsNormalityChecksum(st_PACKET_HEADER& header);*/
+	bool IsIntactPacket(kks::Session& session);
 	SOCKET Accept(SOCKET listenSock);
+	void AnalysePacket(kks::Session& session);
 
 	template<class T>
 	DWORD MakeCheckSum(T data);

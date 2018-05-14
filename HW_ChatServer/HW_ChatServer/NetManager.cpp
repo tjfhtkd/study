@@ -246,11 +246,11 @@ inline kks::Session* NetManager::CreateSession(SOCKET sock)
 	if (session == nullptr)
 	{
 		DWORD uid	= CreateGUID();
-		session		= (kks::Session*)malloc(sizeof(kks::Session));
+		session		= new kks::Session;
 
-		ZeroMemory(session, sizeof(kks::Session));
-		session->sock	= sock;
-		session->uid		= uid;
+		session->roomNo	= 0;
+		session->sock		= sock;
+		session->uid			= uid;
 
 		socketChecker[sock]	= session;
 		sessions[uid]				= session;

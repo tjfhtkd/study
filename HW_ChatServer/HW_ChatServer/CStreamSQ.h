@@ -118,7 +118,7 @@ public:
 	friend CStreamSQ& operator>> (CStreamSQ& obj, std::string* data);
 
 	template<class T>
-	friend CStreamSQ& operator<< (CStreamSQ& obj, T& out_data);
+	friend CStreamSQ& operator<< (CStreamSQ& obj, T* out_data);
 
 
 private:
@@ -137,7 +137,7 @@ private:
 template<class T>
 inline CStreamSQ& operator>>(CStreamSQ& obj, T data)
 {
-	obj.Enqueue(data, sizeof(T));
+	obj.Enqueue((char*)data, sizeof(T));
 	return obj;
 }
 
@@ -149,8 +149,8 @@ inline CStreamSQ & operator>>(CStreamSQ & obj, std::string* data)
 }
 
 template<class T>
-inline CStreamSQ& operator<<(CStreamSQ& obj, T& out_data)
+inline CStreamSQ& operator<<(CStreamSQ& obj, T* out_data)
 {
-	obj.Dequeue(out_data, sizeof(T));
+	obj.Dequeue((char*)out_data, sizeof(T));
 	return obj;
 }

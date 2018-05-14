@@ -164,10 +164,10 @@ int CStreamSQ::Dequeue(char *chpDest, int iByteOfData)
 
 int CStreamSQ::Peek(char *chpDest, int iSize)
 {
-	int i			= 0;
+	int i;
 	int bufSize	= m_bufSize;
 	int front		= m_readPos;
-	for (int i = 0; i < iSize; i++)
+	for (i = 0; i < iSize; i++)
 	{
 		if (front == m_writePos)
 		{
@@ -233,7 +233,8 @@ char* CStreamSQ::GetBufferPtr(void)
 
 char* CStreamSQ::GetReadBufferPtr(void)
 {
-	return (char*)&m_queue[m_readPos];
+	int front = (m_readPos + 1) % m_bufSize;
+	return (char*)&m_queue[front];
 }
 
 char* CStreamSQ::GetWriteBufferPtr(void)
@@ -273,6 +274,7 @@ CStreamSQ& CStreamSQ::operator<<(CStreamSQ& obj)
 		dataSize -= readSize;
 		this->Enqueue(buf, readSize);
 	}
+	return obj;
 }
 
 ////////////////////////////////////////////////// PRIVATE //////////////////////////////////////////////////
