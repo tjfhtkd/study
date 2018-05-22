@@ -67,10 +67,7 @@ LONGLONG HpGuage::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 	tmp->sprite->data	= (PIXEL*)tmpBuf;
 
 	// HP Guage 자체가 화면을 벗어난지 확인하기 위한 clipping
-	Position alignedPos = position;
-	alignedPos.X -= m_HpGuageInfo->centerPos.X;
-	alignedPos.Y -= m_HpGuageInfo->centerPos.Y;
-	m_imgProcessor->Clipping(tmp, &alignedPos, GameSystemInfo::GetInstance()->WindowSize, dib, m_HpGuageInfo->colorKey);
+	m_imgProcessor->Clipping(tmp, &position, GameSystemInfo::GetInstance()->WindowSize, dib, m_HpGuageInfo->colorKey);
 
 	// 이 사태를 우찌 해야하는가...
 	free(tmp->sprite);

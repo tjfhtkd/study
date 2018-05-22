@@ -82,7 +82,7 @@ void Shadow::ProcAlphaBlending(Position* alignedShadowPos, RECT* blendingArea, C
 	m_prevBlendedImg->sprite->data = (PIXEL*)malloc(size);
 	memcpy_s(m_prevBlendedImg->sprite->data, size, m_shadowImg->sprite->data, size);
 
-	m_imgProcessor->AlphaBlending(m_prevBlendedImg, alignedShadowPos, blendingArea, m_shadowImg->colorKey ,backBuf);
+	m_imgProcessor->AlphaBlending(m_prevBlendedImg, *alignedShadowPos, blendingArea, m_shadowImg->colorKey ,backBuf);
 }
 
 AnimStruct* Shadow::GetBlendedImg(void)

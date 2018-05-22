@@ -55,7 +55,11 @@ public:
 	DWORD	m_currRenderCnt;
 	DWORD	m_currUpdateCnt;
 
+	Camera* cam;
+	Map* map;
+
 private:
+
 	CScreenDIB*			m_backBuf;
 	ResourceStorage*	m_resStorage;
 

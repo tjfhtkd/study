@@ -149,6 +149,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="BitmapLoader.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="CGameBase.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="CScreenDIB.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="HpGuage.h" />
     <ClInclude Include="ImageProcessor.h" />
     <ClInclude Include="INetReactor.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="NetConnector.h" />
     <ClInclude Include="NetMessenger.h" />
     <ClInclude Include="NetProcessor.h" />
@@ -177,6 +179,7 @@
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="BitmapLoader.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CGameBase.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="CScreenDIB.cpp" />
@@ -186,6 +189,7 @@
     <ClCompile Include="GameSystemInfo.cpp" />
     <ClCompile Include="HpGuage.cpp" />
     <ClCompile Include="ImageProcessor.cpp" />
+    <ClCompile Include="Map.cpp" />
     <ClCompile Include="NetConnector.cpp" />
     <ClCompile Include="NetMessenger.cpp" />
     <ClCompile Include="NetProcessor.cpp" />

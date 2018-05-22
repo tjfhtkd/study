@@ -35,7 +35,7 @@ AnimStruct* Animation::MakeAnimationStruct(KsDIB* image, INT frameDelay, Positio
 
 bool Animation::AddSprite(AnimStruct* sprite, bool bOverride)
 {
-	return AddSprite(sprite, m_anim.size(), bOverride);
+	return AddSprite(sprite, (int)m_anim.size(), bOverride);
 }
 
 bool Animation::AddSprite(AnimStruct* sprite, INT idx, bool bOverride)

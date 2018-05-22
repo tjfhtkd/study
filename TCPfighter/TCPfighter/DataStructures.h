@@ -52,8 +52,8 @@ enum class KeyMsg : UINT {
 
 struct Position
 {
-	WORD X;
-	WORD Y;
+	SHORT X;
+	SHORT Y;
 };
 
 typedef struct AnimationStruct {

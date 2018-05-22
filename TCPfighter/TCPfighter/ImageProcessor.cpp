@@ -72,7 +72,7 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN Position* targetPos, IN
 		correctionLeft = abs(posX);
 		if (correctionLeft > width)
 		{
-			correctionLeft = width - 1;
+			correctionLeft = width;
 		}
 	}
 
@@ -82,7 +82,7 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN Position* targetPos, IN
 		correctionRight = (posX + width) - clippingArea.right;
 		if (correctionRight >= clippingArea.right + width)
 		{
-			correctionRight = clippingArea.right - 1;
+			correctionRight = clippingArea.right;
 		}
 	}
 
@@ -92,7 +92,7 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN Position* targetPos, IN
 		correctionTop = abs(posY);
 		if (correctionTop > height)
 		{
-			correctionTop = height - 1;
+			correctionTop = height;
 		}
 	}
 
@@ -102,12 +102,13 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN Position* targetPos, IN
 		correctionBotton = (posY + height) - clippingArea.bottom;
 		if (correctionBotton >= clippingArea.bottom + height)
 		{
-			correctionBotton = clippingArea.bottom - 1;
+			correctionBotton = clippingArea.bottom;
 		}
 	}
 
 	buf += posX;
-	if (posY > 0) {
+	if (posY > 0)
+	{
 		buf += clippingArea.right * posY;
 	}
 
@@ -131,25 +132,71 @@ void ImageProcessor::Clipping(OUT AnimStruct* target, IN Position* targetPos, IN
 	}
 }
 
-bool ImageProcessor::AlphaBlending(OUT AnimStruct* target, IN Position* blendingStartPos, IN RECT* blendingArea, IN PIXEL colorKey, OUT CScreenDIB* dibBuf)
+bool ImageProcessor::AlphaBlending(OUT AnimStruct* target, IN Position blendingStartPos, IN RECT* blendingArea, IN PIXEL colorKey, OUT CScreenDIB* dibBuf)
 {
 	if (dibBuf == nullptr || target == nullptr)
 	{
 		return false;
 	}
 
-	// X 값이 음수일 때 false 해버리면 캐릭터가 제일 좌측으로 갈 때 false가 반환되서 블렌딩 하지 않음.
-	// 제대로 할거라면 예외처리를 모든 X(left), Y(bottom), right, top에 해주어야 함.
-	if ((/*blendingStartPos->X < 0 || */blendingStartPos->Y < 0) ||
-		(blendingArea->left < 0 || blendingArea->top < 0 || blendingArea->right < 0 || blendingArea->bottom < 0))
+	int overSizeW = dibBuf->GetWidth() - blendingStartPos.X;
+	if (overSizeW > 0)
 	{
+		// x값이 양수일 때
+		if (overSizeW < blendingArea->right)
+		{
+			blendingArea->right = overSizeW;
+		}
+
+		// x값이 음수일 때
+		if (overSizeW > dibBuf->GetWidth())
+		{
+			if (overSizeW > dibBuf->GetWidth() + blendingArea->right)
+			{
+				// 화면 밖을 좌측으로 벗어남
+				return false;
+			}
+			blendingArea->left = abs(blendingStartPos.X);
+			blendingStartPos.X = 0;
+		}
+	}
+	else
+	{
+		// 화면 밖을 우측으로 벗어남
+		return false;
+	}
+
+	int overSizeH = dibBuf->GetHeight() - blendingStartPos.Y;
+	if (overSizeH > 0)
+	{
+		// y값이 양수일 때
+		if (overSizeH < blendingArea->bottom)
+		{
+			blendingArea->bottom = overSizeH;
+		}
+
+		// y값이 음수일 때
+		if (overSizeH > dibBuf->GetHeight())
+		{
+			if (overSizeH > dibBuf->GetHeight() + blendingArea->bottom)
+			{
+				// 화면 밖을 위로 벗어남
+				return false;
+			}
+			blendingArea->top = overSizeH - dibBuf->GetHeight();
+			blendingStartPos.Y = 0;
+		}
+	}
+	else
+	{
+		// 화면 밖을 아래로 벗어남
 		return false;
 	}
 
 	PIXEL* obj = target->sprite->data;
 	PIXEL* buf = (PIXEL*)dibBuf->GetDibBuffer();
-	buf += abs(blendingStartPos->X);
-	buf += blendingStartPos->Y * (dibBuf->GetPitch() / sizeof(PIXEL));
+	buf += blendingStartPos.X;
+	buf += blendingStartPos.Y * (dibBuf->GetPitch() / sizeof(PIXEL));
 	for (int i = blendingArea->top; i < blendingArea->bottom; i++)
 	{
 		for (int j = blendingArea->left; j < blendingArea->right; j++)

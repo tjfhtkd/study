@@ -37,6 +37,7 @@ Player* GameNetReactor::MakeCharacter(IN bool bOther, IN DWORD ID, IN BYTE Direc
 	if (bOther == false)
 	{
 		player = new Player(hpGuage, &imgPrcessor);
+		m_gameMng->cam->SetCameraBaseObject((CGameBase*)player);
 	}
 	else
 	{
@@ -44,7 +45,7 @@ Player* GameNetReactor::MakeCharacter(IN bool bOther, IN DWORD ID, IN BYTE Direc
 		player->SetStatus((Direction == dfPACKET_MOVE_DIR_LL) ? Player::Status::STAND_L : Player::Status::STAND_R);
 	}
 
-	player->position = {X, Y};
+	player->position = {(SHORT)X, (SHORT)Y};
 	player->SetShadow(shadowObj);
 	player->ID = ID;
 	hpGuage->SetMaxHP(100);

@@ -100,5 +100,8 @@ const wchar_t* Constants::resourcesFileName[Constants::RESOURCE_AMOUNTS] =
 	L"xSpark_1.bmp",
 	L"xSpark_2.bmp",
 	L"xSpark_3.bmp",
-	L"xSpark_4.bmp"
+	L"xSpark_4.bmp",
+
+	// Tile
+	L"Tile_01.bmp"
 };

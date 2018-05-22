@@ -99,6 +99,9 @@ std::vector<CGameBase*>::iterator GameManager::GetEnd(void)
 
 bool GameManager::Initialize(void)
 {
+	GameSystemInfo::GetInstance()->WindowSize = { 0, 0, 640, 480 };
+	GameSystemInfo::GetInstance()->GamePlayArea = { 0, 0, 6400, 6400 };
+
 	timeBeginPeriod(1);
 	m_currRenderCnt = m_currUpdateCnt = m_secCnt = m_deltaTime = 0;
 	m_secCnt = timeGetTime();
@@ -113,7 +116,19 @@ bool GameManager::Initialize(void)
 	}
 
 	// Backbuffer 배경이미지 준비
-	m_backBuf = new CScreenDIB(m_resStorage->GetResource(Constants::ResourceName::MAP));
+	// 직접 빈 배경 만들 때 뭔가 버그가 있어서 터지고 있음...
+	int width = GameSystemInfo::GetInstance()->WindowSize.right;
+	int height = GameSystemInfo::GetInstance()->WindowSize.bottom;
+	PIXEL defaultWorldColor;
+	defaultWorldColor.data = (DWORD)0xffffffff;
+	m_backBuf = new CScreenDIB(width, height, 32, defaultWorldColor);
+	//m_backBuf = new CScreenDIB(m_resStorage->GetResource(Constants::ResourceName::MAP));
+
+	cam = new Camera(0, 0, nullptr);
+	cam->AdjustCameSpeed(1.0);
+	cam->TurnOnFreeCamMode = false;
+
+	map = new Map(this);
 	return true;
 }
 
@@ -132,6 +147,18 @@ void GameManager::Release(void)
 		m_backBuf = nullptr;
 	}
 
+	if (cam != nullptr)
+	{
+		delete cam;
+		cam = nullptr;
+	}
+
+	if (map != nullptr)
+	{
+		delete map;
+		map = nullptr;
+	}
+
 	objects.clear();
 }
 
@@ -142,6 +169,7 @@ void GameManager::KeyProcess(KeyMsg keyMsg)
 		return;
 	}
 
+	cam->MoveCam();
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->KeyProcess(keyMsg);
@@ -150,10 +178,17 @@ void GameManager::KeyProcess(KeyMsg keyMsg)
 
 LONGLONG GameManager::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 {
+	int screenMidX = GameSystemInfo::GetInstance()->WindowSize.right / 2;
+	int screenMidY = GameSystemInfo::GetInstance()->WindowSize.bottom / 2;
+
+	map->Update(deltaTime, m_backBuf, frameCount);		// 맵은 최우선사항으로 먼저 처리되어야 함.
+	
 	SortBaseY(objects);
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->Update(deltaTime, m_backBuf, m_currUpdateCnt);
+		objects[i]->ScreenPos.X = screenMidX + (objects[i]->position.X - cam->CenterPos.X);
+		objects[i]->ScreenPos.Y = screenMidY + (objects[i]->position.Y - cam->CenterPos.Y);
 	}
 	CalcFrameSkip(deltaTime);
 	PrintFPS(deltaTime);
@@ -181,6 +216,7 @@ void GameManager::SortBaseY(std::vector<CGameBase*>& objects)
 
 void GameManager::Draw(CScreenDIB* dib)
 {
+	map->Draw(dib);		// 맵은 최우선사항으로 먼저 처리되어야 함.
 	for (int i = 0; i < objects.size(); i++)
 	{
 		objects[i]->Draw(dib);

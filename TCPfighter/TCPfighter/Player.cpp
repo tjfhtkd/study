@@ -334,101 +334,41 @@ void Player::KeyProcess(KeyMsg keyMsg)
 
 LONGLONG Player::Update(LONGLONG deltaTime, CScreenDIB* dib, DWORD frameCount)
 {
-	Hp->Update(deltaTime, dib, frameCount);
-
 	// 이젠 귀찮음.. 시간도 없음.. 여기는 이제 다 때려넣어지는 구간임.
 	Animation* anim = animations[(int)m_currentStatus];
 	anim->Play(frameCount);
 	AnimStruct* animImg = anim->GetCurrentSprite();
-	Position alignedPos = this->position;
+	Position alignedPos = this->ScreenPos;
 	alignedPos.X -= animImg->centerPos.X;
 	alignedPos.Y -= animImg->centerPos.Y;
 	
 	// LONG -> SHORT 해도 문제 없을까?
 	// 이미지가 겁나게 초 고해상도였다면??
 	// HP 출력 좌표 계산						<- 얘는 왜 중점좌표 0으로 줬지..?
-	Position alignedHPPos = position;
+	Position alignedHPPos = ScreenPos;
 	alignedHPPos.X -= Hp->GetCenterPos().X + 30;
 	alignedHPPos.Y -= Hp->GetCenterPos().Y - 10;
 	Hp->position = alignedHPPos;
+	Hp->Update(deltaTime, dib, frameCount);
 
 	if (m_shadow->On == true)
 	{
-		// 그림자 출력 좌표 계산
-		Position alignedShadowPos = position;
-		// 서버에 붙이면서 좌표가 unsigned로 변경됨. 음수일 때 overflow 대책용. y값도 해야하나..?
-		int signCorrectionX = int(position.X) - int(m_shadow->GetCenterPos().X);
-		if (signCorrectionX < 0)
-		{
-			alignedShadowPos.X = 0;
-		}
-		else
-		{
-			alignedShadowPos.X -= m_shadow->GetCenterPos().X;
-		}
-		alignedShadowPos.Y -= m_shadow->GetCenterPos().Y;
-		m_shadow->position = alignedShadowPos;
+		m_shadow->position = ScreenPos;
+		m_shadow->position.X -= m_shadow->GetCenterPos().X;
+		m_shadow->position.Y -= m_shadow->GetCenterPos().Y;
 
 		// 그림자랑 캐릭터 겹치는 부분 블렌딩 할 좌표값 계산하기
-		Position blendingStartPos = { alignedPos.X, alignedPos.Y };
 		RECT blendingArea = { 0								//left
 			, 0														//top
 			, animImg->sprite->bmpInfoHeader->bmiHeader.biWidth		//right
 			, animImg->sprite->bmpInfoHeader->bmiHeader.biHeight		//bottom
 		};
-
-		m_shadow->ProcAlphaBlending(&alignedShadowPos, &blendingArea, dib);
+		m_shadow->ProcAlphaBlending(&m_shadow->position, &blendingArea, dib);
 		if (m_shadow->GetBlendedImg() != nullptr)
 		{
-			m_imgProcessor->Clipping(m_shadow->GetBlendedImg(), &alignedShadowPos, GameSystemInfo::GetInstance()->WindowSize, dib, animImg->colorKey);
+			m_imgProcessor->Clipping(m_shadow->GetBlendedImg(), &m_shadow->position, GameSystemInfo::GetInstance()->WindowSize, dib, animImg->colorKey);
 		}
 	}
-
-	/*
-	// START : 좌표 계산 확인용 코드
-	if (alignedPos.X >= 0)
-	{
-		PIXEL* centerXCheck = (PIXEL*)dib->GetDibBuffer();
-		centerXCheck += alignedPos.X;
-		for (int i = 0; i < GameSystemInfo::GetInstance()->GamePlayArea.bottom; i++)
-		{
-			centerXCheck[i * GameSystemInfo::GetInstance()->WindowSize.right].data = 0xff000000;
-		}
-	}
-
-	if (alignedPos.Y >= 0)
-	{
-		PIXEL* centerYCheck = (PIXEL*)dib->GetDibBuffer();
-		centerYCheck += alignedPos.Y * GameSystemInfo::GetInstance()->WindowSize.right;
-		for (int i = 0; i < GameSystemInfo::GetInstance()->WindowSize.right; i++)
-		{
-			centerYCheck[i].data = 0xff000000;
-		}
-	}
-	// END : 좌표 계산 확인용 코드
-
-	// START : 좌표 계산 확인용 코드
-	if (Position.X >= 0)
-	{
-		PIXEL* posXCheck = (PIXEL*)dib->GetDibBuffer();
-		posXCheck += Position.X;
-		for (int i = 0; i < GameSystemInfo::GetInstance()->GamePlayArea.bottom; i++)
-		{
-			posXCheck[i * GameSystemInfo::GetInstance()->WindowSize.right].data = 0xffff0000;
-		}
-	}
-
-	if (Position.Y >= 0)
-	{
-		PIXEL* posYCheck = (PIXEL*)dib->GetDibBuffer();
-		posYCheck += Position.Y * GameSystemInfo::GetInstance()->WindowSize.right;
-		for (int i = 0; i < GameSystemInfo::GetInstance()->WindowSize.right; i++)
-		{
-			posYCheck[i].data = 0xffff0000;
-		}
-	}
-	// END : 좌표 계산 확인용 코드
-	//*/
 
 	// 캐릭터 이미지 Clipping
 	m_imgProcessor->Clipping(animImg, &alignedPos, GameSystemInfo::GetInstance()->WindowSize, dib, animImg->colorKey);

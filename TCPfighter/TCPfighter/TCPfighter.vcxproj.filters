@@ -37,6 +37,9 @@
     <Filter Include="Util\Network">
       <UniqueIdentifier>{822c98c0-47e4-4df8-8545-22975df21c49}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Util\Map">
+      <UniqueIdentifier>{56d6133f-6f2d-45ab-a5af-9b796fbe4e14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -117,6 +120,12 @@
     <ClInclude Include="NetMessenger.h">
       <Filter>Util\Network</Filter>
     </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Util\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>Util\Map</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -181,6 +190,12 @@
     </ClCompile>
     <ClCompile Include="NetMessenger.cpp">
       <Filter>Util\Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Util\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="Map.cpp">
+      <Filter>Util\Map</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

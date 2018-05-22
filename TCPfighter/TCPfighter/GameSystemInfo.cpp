@@ -16,6 +16,7 @@ GameSystemInfo::GameSystemInfo(const GameSystemInfo & obj)
 const GameSystemInfo& GameSystemInfo::operator=(const GameSystemInfo & obj)
 {
 	// 복사 대입 생성자 막기
+	return obj;
 }
 
 GameSystemInfo::~GameSystemInfo()

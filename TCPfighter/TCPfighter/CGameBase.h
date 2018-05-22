@@ -17,6 +17,7 @@ public:
 public:
 	INT		ID;
 	Position	position;
+	Position	ScreenPos;
 
 public:
 	virtual void CommunicateNetwork(stPacket_ArgCollectionBox intendBox) = 0;
