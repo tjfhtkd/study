@@ -204,19 +204,70 @@ int CStreamSQ::Dequeue(char *chpDest, int iByteOfData)
 
 int CStreamSQ::Peek(char *chpDest, int iSize)
 {
-	int i;
-	int bufSize	= m_bufSize;
-	int front		= m_readPos;
-	for (i = 0; i < iSize; i++)
+	int bufSize = m_bufSize;
+	int readPos = m_readPos;
+	int writePos = m_writePos;
+
+	// 안에 읽을 내용물이 몇개이느뇨?
+	int readableSize;
+	int contentsSize;
+	if (readPos >= writePos)
 	{
-		if (front == m_writePos)
-		{
-			return i;
-		}
-		front = (front + 1) % bufSize;
-		chpDest[i] = m_queue[front];
+		readableSize = bufSize - (readPos + 1);
+		contentsSize = bufSize - readPos + writePos;
 	}
-	return i;
+	else
+	{
+		readableSize = writePos - readPos;
+		contentsSize = writePos - readPos;
+	}
+
+	if (contentsSize == 0)
+	{
+		// 볼 것도 없다. 읽을게 없는데 뭘 하냐.
+		return 0;
+	}
+
+	if (iSize <= readableSize)
+	{
+		memcpy_s(chpDest, iSize, &m_queue[readPos + 1], iSize);
+		readPos += iSize;
+		while (readPos >= bufSize)
+		{
+			readPos -= bufSize;
+		}
+		return iSize;
+	}
+	else  // 네가 원하는 만큼 읽으려거든 중간이 잘렸음을 알라.
+	{
+		memcpy_s(chpDest, readableSize, &m_queue[readPos + 1], readableSize);
+		readPos += readableSize;
+		while (readPos >= bufSize)
+		{
+			readPos -= bufSize;
+		}
+
+		if (readPos == writePos)
+		{
+			return readableSize;
+		}
+
+		int remainByte = iSize - readableSize;
+		int useSize = (bufSize - 1) - ((bufSize - (writePos + 1)) + readPos) % bufSize;
+		if (remainByte > useSize)
+		{
+			remainByte = useSize;
+		}
+		memcpy_s(&chpDest[readableSize], remainByte, &m_queue[(readPos + 1) % bufSize], remainByte);
+
+		readPos += remainByte;
+		while (readPos >= bufSize)
+		{
+			readPos -= bufSize;
+		}
+
+		return readableSize + remainByte;
+	}
 }
 
 void CStreamSQ::RemoveData(int iByteOfData)
