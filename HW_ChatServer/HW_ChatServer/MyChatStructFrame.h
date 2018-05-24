@@ -4,11 +4,13 @@
 
 #include "Protocol.h"
 #include "CStreamSQ.h"
+#include "CStreamLocalQ.h"
 
 #define	dfMAX_ROOM_CHATTER		FD_SETSIZE
 namespace kks
 {
-	typedef CStreamSQ RingBuf;
+	typedef CStreamSQ			RingBuf;
+	typedef CStreamLocalQ		LocalBuf;
 
 	struct Session
 	{

@@ -127,6 +127,12 @@ kks::Session* NetManager::GetSession(DWORD uid)
 	return sessions[uid];
 }
 
+int NetManager::GetUserCount(void)
+{
+	return sessions.size();
+}
+
+
 void NetManager::DeployFdSet(FD_SET& rSet, FD_SET& wSet, std::list<kks::Session*>& sessions)
 {
 	FD_ZERO(&rSet);
@@ -192,21 +198,22 @@ bool NetManager::GetSelectedSessions(
 	, std::list<FD_SET>& in_rSetList, std::list<FD_SET>& in_wSetList
 	, timeval& timeOut)
 {
-	return MakeSelectedSessions(in_rSetList, out_rSessions, true, timeOut)
-		|| MakeSelectedSessions(in_wSetList, out_wSessions, false, timeOut);
-}
+	if (in_rSetList.size() == 0 && in_wSetList.size() == 0)
+	{
+		return false;
+	}
 
-bool NetManager::MakeSelectedSessions(
-	std::list<FD_SET>& checkList
-	, std::list<kks::Session*>& out_list
-	, bool bReadSet
-	, timeval& timeOut)
-{
 	INT sockStateCheck;
 	bool bHasSomeAction = false;
-	for (FD_SET set : checkList)
+
+	INT checkListSize	= in_rSetList.size() + in_wSetList.size();
+	auto rSetListBegin	= in_rSetList.begin();
+	auto rSetListEnd		= in_rSetList.end();
+	auto wSetListBegin	= in_wSetList.begin();
+	auto wSetListEnd	= in_wSetList.end();
+	for (int i = 0; i < checkListSize; i++)
 	{
-		sockStateCheck = (bReadSet == true) ? select(0, &set, nullptr, nullptr, &timeOut) : select(0, nullptr, &set, nullptr, &timeOut);
+		sockStateCheck = select(0, &(*rSetListBegin), &(*wSetListBegin), nullptr, &timeOut);
 		if (sockStateCheck == SOCKET_ERROR)
 		{
 			// hmm..
@@ -220,11 +227,27 @@ bool NetManager::MakeSelectedSessions(
 		else
 		{
 			// somthing is selected.
-			for (u_int i = 0; i < set.fd_count; i++)
-			{
-				out_list.push_back(socketChecker[set.fd_array[i]]);
-			}
 			bHasSomeAction = true;
+
+			for (u_int j = 0; j < (*rSetListBegin).fd_count; j++)
+			{
+				out_rSessions.push_back(socketChecker[(*rSetListBegin).fd_array[j]]);
+			}
+
+			for (u_int j = 0; j < (*wSetListBegin).fd_count; j++)
+			{
+				out_wSessions.push_back(socketChecker[(*wSetListBegin).fd_array[j]]);
+			}
+		}
+
+		if (rSetListBegin != rSetListEnd)
+		{
+			rSetListBegin++;
+		}
+
+		if (wSetListBegin != wSetListEnd)
+		{
+			wSetListBegin++;
 		}
 	}
 	return bHasSomeAction;

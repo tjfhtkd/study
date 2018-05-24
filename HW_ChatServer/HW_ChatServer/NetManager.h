@@ -24,6 +24,8 @@ public:
 	kks::Room* GetRoomInfo(DWORD roomID);
 	kks::Session* GetSession(DWORD uid);
 
+	int GetUserCount(void);
+
 public:
 	bool IsServerRun;
 
@@ -43,6 +45,7 @@ private:
 		, std::list<kks::Session*>& out_list
 		, bool bReadSet
 		, timeval& timeOut);
+
 
 	// Global User ID
 	DWORD CreateGUID(void);

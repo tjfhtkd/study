@@ -27,8 +27,8 @@ void NetPacketProcessor::ProcessSessionRequest(std::list<kks::Session*>& rSessio
 		}
 		else
 		{
-			char buf[2048];
-			INT recvLen = recv(session->sock, buf, 2048, 0);
+			char buf[4096];
+			INT recvLen = recv(session->sock, buf, 4096, 0);
 			if (recvLen == 0 || recvLen == SOCKET_ERROR)
 			{
 				if (WSAGetLastError() == WSAEWOULDBLOCK)
@@ -39,6 +39,7 @@ void NetPacketProcessor::ProcessSessionRequest(std::list<kks::Session*>& rSessio
 				// '0' means gracefully closed.
 				// 'SOCKET_ERROR' eq. -1, means something wrong.
 				netMng->RemoveSession(session);
+				wSessions.remove(session);
 			}
 			else
 			{
@@ -47,27 +48,32 @@ void NetPacketProcessor::ProcessSessionRequest(std::list<kks::Session*>& rSessio
 				{
 					AnalysePacket(*session);
 				}
-				else
-				{
-					// 헤더에 문제가 있거나 뭔가 패킷이 꼬여버렸다. 작별을 고하자
-					ResponseExitRoom(session);
-					netMng->RemoveSession(session);
-				}
+				//wprintf_s(L"RECV\n");
 			}
 		}
 	}
 
+	int sendCnt = 0;
 	for (kks::Session* session : wSessions)
 	{
-		kks::RingBuf localBuf(session->sendQ.GetUseSize());
-		localBuf.MoveWritePos(session->sendQ.GetUseSize());
-		session->sendQ << localBuf;
+		int localBufSize = session->sendQ.GetUseSize();
+		kks::LocalBuf localBuf(localBufSize + 1);
+		session->sendQ >> localBuf;
 		// 애초에 멀쩡한 놈들만 걸러졌으므로 그냥 send 다 때림
-		while (localBuf.IsEmpty() == false)
+		int sendSize = send(session->sock, (const char*)localBuf.GetReadBufferPtr(), (int)localBuf.GetUseSize(), 0);
+		//int sendSize = send(session->sock, session->sendQ.GetReadBufferPtr(), session->sendQ.GetReadableSizeAtOneTime(), 0);
+		if (sendSize == SOCKET_ERROR /*|| sendSize != localBuf.GetUseSize()*/)
 		{
-			// 작업 중 -> send를 한 번에 다 못했을 때 처리
-			int sendSize = send(session->sock, localBuf.GetReadBufferPtr(), localBuf.GetUseSize(), 0);
+			// 뭔가 문제가 있다. 저쪽이나 이쪽이나 송신 버퍼가 가득 찬 경우이므로 굿바이.
+			ResponseExitRoom(session);
+			netMng->RemoveSession(session);
+			//wprintf_s(L"SEND BUFFER IS FULL OR SOCKET_ERROR\n");
 		}
+		//session->sendQ.RemoveData(sendSize);
+		/*else
+		{
+			wprintf_s(L"<%5d> SEND %s\n", ++sendCnt, localBuf.GetReadBufferPtr() + sizeof(st_PACKET_HEADER));
+		}*/
 	}
 }
 
@@ -88,35 +94,47 @@ void NetPacketProcessor::ResponseLogIn(kks::Session& session)
 		result = df_RESULT_LOGIN_DNICK;
 	}
 
-	// 내일 와서 체크   05.12  a.m. 12:18
 	st_PACKET_HEADER header;
 	header.byCode = dfPACKET_CODE;
 	header.wMsgType = df_RES_LOGIN;
-	header.wPayloadSize = sizeof(BYTE) + sizeof(DWORD);
-	header.byCheckSum = (MakeCheckSum(df_RES_ROOM_LEAVE) + MakeCheckSum(result) + MakeCheckSum(session.uid)) % 256;
-	session.sendQ >> header >> &result >> &session.uid;
+	header.wPayloadSize = sizeof(result) + sizeof(session.uid);
+	header.byCheckSum = (BYTE)((MakeCheckSum(df_RES_LOGIN) + MakeCheckSum(result) + MakeCheckSum(session.uid)) % 256);
+	session.sendQ >> header >> result >> session.uid;
+}
+
+void NetPacketProcessor::EchoTest(kks::Session& session)
+{
+	st_PACKET_HEADER header;
+	session.recvQ << &header;
+
+	WCHAR echoMsg[128];
+	session.recvQ << &echoMsg;
+
+	session.sendQ >> header >> echoMsg;
 }
 
 bool NetPacketProcessor::IsIntactPacket(kks::Session& session)
 {
 	if (session.recvQ.GetUseSize() <= sizeof(st_PACKET_HEADER))
 	{
-		return true;
+		return false;
 	}
-
-	int bufSize = session.recvQ.GetUseSize();
-	kks::RingBuf localBuf(bufSize + 1);
-	session.recvQ.Peek(localBuf.GetReadBufferPtr(), bufSize);
 	
 	// 빼가는 패킷 단위는 반드시 완성된 패킷 단위이므로 헤더를 읽을 때는 항상 옳아야 한다.
 	// 정말 그게 보장이 되는가..?
 	st_PACKET_HEADER header;
-	localBuf << &header;
+	session.recvQ.Peek((char*)&header, sizeof(st_PACKET_HEADER));
 	if (header.byCode != dfPACKET_CODE)
 	{
 		// strange session OR logic err
 		return false;
 	}
+
+	if (session.recvQ.GetUseSize() - sizeof(st_PACKET_HEADER) < header.wPayloadSize)
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -130,31 +148,15 @@ SOCKET NetPacketProcessor::Accept(SOCKET listenSock)
 
 void NetPacketProcessor::AnalysePacket(kks::Session& session)
 {
-	kks::RingBuf localBuf(session.recvQ.GetUseSize() + 1);
-	int readSize = session.recvQ.Peek(localBuf.GetReadBufferPtr(), localBuf.GetBufferSize());
-	// Peek 자체는 char* buf만 받아서 바로 memcpy 때리는거다보니 localBuf가 가진 front, rear 변화가 안생김.
-	localBuf.MoveWritePos(readSize);
-	if (localBuf.GetUseSize() <= sizeof(st_PACKET_HEADER))
-	{
-		return;
-	}
-
 	st_PACKET_HEADER header;
-	localBuf << &header;
-	if (localBuf.GetUseSize() < header.wPayloadSize)
-	{
-		return;
-	}
+	session.recvQ << &header;
 
 	switch (header.wMsgType)
 	{
-	case df_REQ_LOGIN:
-		//RequestLogIn();
-		//break;
 	case df_RES_LOGIN:
 		ResponseLogIn(session);
 		break;
-
+		/*
 	case df_REQ_ROOM_LIST:
 		break;
 
@@ -190,10 +192,29 @@ void NetPacketProcessor::AnalysePacket(kks::Session& session)
 
 	case df_RES_USER_ENTER:
 		break;
+		*/
+	case 15:	// ECHO test
+		//EchoTest(session);
+		WCHAR echoMsg[128];
+		session.recvQ << &echoMsg;
+
+		session.sendQ >> header >> echoMsg;
+		break;
 
 	default:
 		break;
 	}
+}
+
+DWORD NetPacketProcessor::MakeCheckSum(DWORD in_checkSum, kks::LocalBuf& buf, int size)
+{
+	unsigned char* cursor = (unsigned char*)buf.GetReadBufferPtr();
+	for (int i = 0; i < size; i++) {
+
+		in_checkSum += *cursor;
+		cursor++;
+	}
+	return in_checkSum % 256;
 }
 
 bool NetPacketProcessor::ResponseExitRoom(kks::Session* leavingSession)
@@ -213,7 +234,6 @@ bool NetPacketProcessor::ResponseExitRoom(kks::Session* leavingSession)
 	header.wPayloadSize = sizeof(DWORD);
 	header.byCheckSum = (MakeCheckSum(df_RES_ROOM_LEAVE) + MakeCheckSum(payload)) % 256;
 
-	int sendRetSize;
 	int sendMsgSize = sizeof(DWORD) + sizeof(st_PACKET_HEADER);
 	NetManager* netMng = m_netMng;
 	kks::Room* enjoyedRoom = m_netMng->GetRoomInfo(roomID);
@@ -221,7 +241,7 @@ bool NetPacketProcessor::ResponseExitRoom(kks::Session* leavingSession)
 	CStreamSQ localBuf(2048);
 	for (int i = 0; i < enjoyedRoom->chatterJoinCnt; i++)
 	{
-		localBuf >> &header >> &payload;
+		localBuf >> header >> payload;
 		session = netMng->GetSession(enjoyedRoom->uidList[i]);
 		if (session->uid == leavingSession->uid)
 		{

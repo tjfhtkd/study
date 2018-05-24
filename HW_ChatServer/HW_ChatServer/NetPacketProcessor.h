@@ -41,6 +41,8 @@ public:
 	// 타 사용자 입장
 	bool ResponseUserEnter();
 
+	void EchoTest(kks::Session& session);
+
 private:
 	bool IsIntactPacket(kks::Session& session);
 	SOCKET Accept(SOCKET listenSock);
@@ -48,6 +50,7 @@ private:
 
 	template<class T>
 	DWORD MakeCheckSum(T data);
+	DWORD MakeCheckSum(DWORD in_checkSum, kks::LocalBuf& buf, int size);
 
 private:
 	NetManager* m_netMng;
@@ -58,8 +61,9 @@ template<class T>
 DWORD NetPacketProcessor::MakeCheckSum(T data)
 {
 	DWORD checkSum = 0;
+	int size = sizeof(T);
 	unsigned char* cursor = (unsigned char*)&data;
-	for (int i = 0; i < sizeof(T); i++) {
+	for (int i = 0; i < size; i++) {
 
 		checkSum += *cursor;
 		cursor++;

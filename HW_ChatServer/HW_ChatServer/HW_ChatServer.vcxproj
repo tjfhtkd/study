@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CStreamLocalQ.h" />
     <ClInclude Include="CStreamSQ.h" />
     <ClInclude Include="MyChatStructFrame.h" />
     <ClInclude Include="NetConnector.h" />
@@ -157,6 +158,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CStreamLocalQ.cpp" />
     <ClCompile Include="CStreamSQ.cpp" />
     <ClCompile Include="HW_ChatServer.cpp" />
     <ClCompile Include="MyChatStructFrame.cpp" />

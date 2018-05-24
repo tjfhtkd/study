@@ -13,7 +13,7 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="RingBuffer">
+    <Filter Include="BufferQueue">
       <UniqueIdentifier>{d9fdfaf1-808b-46be-bb78-46b40808a1f6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -31,7 +31,7 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="CStreamSQ.h">
-      <Filter>RingBuffer</Filter>
+      <Filter>BufferQueue</Filter>
     </ClInclude>
     <ClInclude Include="NetManager.h">
       <Filter>헤더 파일</Filter>
@@ -41,6 +41,9 @@
     </ClInclude>
     <ClInclude Include="NetPacketProcessor.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CStreamLocalQ.h">
+      <Filter>BufferQueue</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +57,7 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="CStreamSQ.cpp">
-      <Filter>RingBuffer</Filter>
+      <Filter>BufferQueue</Filter>
     </ClCompile>
     <ClCompile Include="NetManager.cpp">
       <Filter>소스 파일</Filter>
@@ -64,6 +67,9 @@
     </ClCompile>
     <ClCompile Include="NetPacketProcessor.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CStreamLocalQ.cpp">
+      <Filter>BufferQueue</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,4 +1,7 @@
 #pragma once
+
+class CStreamLocalQ;
+
 class CStreamSQ
 {
 public:
@@ -111,11 +114,10 @@ public:
 	bool IsEmpty(void);
 
 	CStreamSQ& operator<< (CStreamSQ& obj);
+	CStreamSQ& operator>> (CStreamLocalQ& obj);
 
 	template<class T>
-	friend CStreamSQ& operator>> (CStreamSQ& obj, T data);
-
-	friend CStreamSQ& operator>> (CStreamSQ& obj, std::string* data);
+	friend CStreamSQ& operator>> (CStreamSQ& obj, T& data);
 
 	template<class T>
 	friend CStreamSQ& operator<< (CStreamSQ& obj, T* out_data);
@@ -135,16 +137,9 @@ private:
 
 
 template<class T>
-inline CStreamSQ& operator>>(CStreamSQ& obj, T data)
+inline CStreamSQ& operator>>(CStreamSQ& obj, T& data)
 {
-	obj.Enqueue((char*)data, sizeof(T));
-	return obj;
-}
-
-template<>
-inline CStreamSQ & operator>>(CStreamSQ & obj, std::string* data)
-{
-	obj.Enqueue((char*)data->c_str(), sizeof(data->length()));
+	obj.Enqueue((char*)&data, sizeof(T));
 	return obj;
 }
 
