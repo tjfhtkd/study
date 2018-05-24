@@ -1,4 +1,7 @@
 #pragma once
+
+class CStreamLocalQ;
+
 class CStreamSQ
 {
 public:
@@ -110,6 +113,16 @@ public:
 	bool IsFull(INT wPos, INT rPos, INT bufSize);
 	bool IsEmpty(void);
 
+	CStreamSQ& operator<< (CStreamSQ& obj);
+	CStreamSQ& operator>> (CStreamLocalQ& obj);
+
+	template<class T>
+	friend CStreamSQ& operator>> (CStreamSQ& obj, T& data);
+
+	template<class T>
+	friend CStreamSQ& operator<< (CStreamSQ& obj, T* out_data);
+
+
 private:
 	void	Initial(int iBufferSize);
 	void	Release(void);
@@ -120,3 +133,19 @@ private:
 	INT		m_writePos;	// rear
 	BYTE*		m_queue;
 };
+
+
+
+template<class T>
+inline CStreamSQ& operator>>(CStreamSQ& obj, T& data)
+{
+	obj.Enqueue((char*)&data, sizeof(T));
+	return obj;
+}
+
+template<class T>
+inline CStreamSQ& operator<<(CStreamSQ& obj, T* out_data)
+{
+	obj.Dequeue((char*)out_data, sizeof(T));
+	return obj;
+}

@@ -4,7 +4,7 @@
 
 CStreamSQ::CStreamSQ()
 {
-	Initial(100);
+	Initial(1000);
 }
 
 CStreamSQ::CStreamSQ(int iBufferSize)
@@ -77,7 +77,7 @@ int CStreamSQ::Enqueue(char *chpData, int iByteOfData)
 	}
 	else
 	{
-		writableSize =readPos - (writePos + 1);
+		writableSize = readPos - (writePos + 1);
 	}
 
 	if (writableSize >= iByteOfData)	// 쓰려는 용량보다 여유공간이 많다면
@@ -133,41 +133,81 @@ int CStreamSQ::Enqueue(char *chpData, int iByteOfData)
 
 int CStreamSQ::Dequeue(char *chpDest, int iByteOfData)
 {
-	int readableSize = GetReadableSizeAtOneTime();
-	if (readableSize >= iByteOfData)
+	int bufSize = m_bufSize;
+	int readPos = m_readPos;
+	int writePos = m_writePos;
+
+	// 안에 읽을 내용물이 몇개이느뇨?
+	int readableSize;
+	int contentsSize;
+	if (readPos >= writePos)
 	{
-		memcpy_s(chpDest, iByteOfData, &m_queue[(m_readPos + 1) % m_bufSize], iByteOfData);
-		RemoveData(iByteOfData);
-		return iByteOfData;
+		readableSize = bufSize - (readPos + 1);
+		contentsSize = bufSize - readPos + writePos;
 	}
 	else
 	{
-		memcpy_s(chpDest, readableSize, &m_queue[(m_readPos + 1) % m_bufSize], readableSize);
-		RemoveData(readableSize);
-		int remainByte = iByteOfData - readableSize;
-		if (IsEmpty())
+		readableSize = writePos - readPos;
+		contentsSize = writePos - readPos;
+	}
+
+	if (contentsSize == 0)
+	{
+		// 볼 것도 없다. 읽을게 없는데 뭘 하냐.
+		return 0;
+	}
+
+	if(iByteOfData <= readableSize)
+	{
+		memcpy_s(chpDest, iByteOfData, &m_queue[readPos + 1], iByteOfData);
+		readPos += iByteOfData;
+		while (readPos >= bufSize)
 		{
+			readPos -= bufSize;
+		}
+		m_readPos = readPos;
+		return iByteOfData;
+	}
+	else  // 네가 원하는 만큼 읽으려거든 중간이 잘렸음을 알라.
+	{
+		memcpy_s(chpDest, readableSize, &m_queue[readPos + 1], readableSize);
+		readPos += readableSize;
+		while (readPos >= bufSize)
+		{
+			readPos -= bufSize;
+		}
+		
+		if (readPos == writePos)
+		{
+			m_readPos = readPos;
 			return readableSize;
 		}
 
-		int useSize = GetUseSize();
+		int remainByte = iByteOfData - readableSize;
+		int useSize = (bufSize - 1) - ((bufSize - (writePos + 1)) + readPos) % bufSize;
 		if (remainByte > useSize)
 		{
 			remainByte = useSize;
 		}
-		memcpy_s(&chpDest[readableSize], remainByte, &m_queue[(m_readPos + 1) % m_bufSize], remainByte);
-		RemoveData(remainByte);
-		return remainByte + readableSize;
+		memcpy_s(&chpDest[readableSize], remainByte, &m_queue[(readPos + 1) % bufSize], remainByte);
+
+		readPos += remainByte;
+		while (readPos >= bufSize)
+		{
+			readPos -= bufSize;
+		}
+
+		m_readPos = readPos;
+		return readableSize + remainByte;
 	}
-	return 0;
 }
 
 int CStreamSQ::Peek(char *chpDest, int iSize)
 {
-	int i			= 0;
+	int i;
 	int bufSize	= m_bufSize;
 	int front		= m_readPos;
-	for (int i = 0; i < iSize; i++)
+	for (i = 0; i < iSize; i++)
 	{
 		if (front == m_writePos)
 		{
@@ -233,7 +273,8 @@ char* CStreamSQ::GetBufferPtr(void)
 
 char* CStreamSQ::GetReadBufferPtr(void)
 {
-	return (char*)&m_queue[m_readPos];
+	int front = (m_readPos + 1) % m_bufSize;
+	return (char*)&m_queue[front];
 }
 
 char* CStreamSQ::GetWriteBufferPtr(void)
@@ -260,6 +301,27 @@ bool CStreamSQ::IsFull(INT wPos, INT rPos, INT bufSize)
 bool CStreamSQ::IsEmpty(void)
 {
 	return (m_readPos == m_writePos)? true : false;
+}
+
+CStreamSQ& CStreamSQ::operator<<(CStreamSQ& obj)
+{
+	int readSize;
+	int dataSize = obj.GetUseSize();
+	char buf[1024];
+	while (dataSize > 0)
+	{
+		readSize = obj.Dequeue(buf, 1024);
+		dataSize -= readSize;
+		this->Enqueue(buf, readSize);
+	}
+	return obj;
+}
+
+CStreamSQ& CStreamSQ::operator>>(CStreamLocalQ& obj)
+{
+	int deqSize = this->Dequeue((char*)obj.GetWriteBufferPtr(), (int)obj.GetFreeSize());
+	obj.MoveWritePos(deqSize);
+	return *this;
 }
 
 ////////////////////////////////////////////////// PRIVATE //////////////////////////////////////////////////

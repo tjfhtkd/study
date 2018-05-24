@@ -147,11 +147,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CStreamLocalQ.h" />
     <ClInclude Include="CStreamSQ.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CStreamLocalQ.cpp" />
     <ClCompile Include="CStreamSQ.cpp" />
     <ClCompile Include="RingBufferTest.cpp" />
     <ClCompile Include="stdafx.cpp">
