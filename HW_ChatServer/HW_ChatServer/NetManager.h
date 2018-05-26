@@ -11,7 +11,7 @@ public:
 
 public:
 	bool Connect(void);
-	void StartLoop(void);
+	void ProcessNetwork(void);
 	
 	/**
 	@param	SOCKET	$sock 세션에 등록할 socket
@@ -40,11 +40,6 @@ private:
 		, std::list<FD_SET>& in_wSetList
 		, timeval& timeOut
 	);
-	bool MakeSelectedSessions(
-		std::list<FD_SET>& checkList
-		, std::list<kks::Session*>& out_list
-		, bool bReadSet
-		, timeval& timeOut);
 
 
 	// Global User ID
@@ -58,6 +53,13 @@ private:
 	inline kks::Session* CreateSession(SOCKET sock);
 
 private:
+	timeval timeOut;
+	std::list<FD_SET> rSetList;
+	std::list<FD_SET> wSetList;
+	std::list<kks::Session*> rSessions;
+	std::list<kks::Session*> wSessions;
+
+
 	DWORD next_UID;			// 일단 ID 리셋 주기가 빠르다 가정하고 그냥 DWORD++ 하도록 함.
 	DWORD next_RoomID;		// 나중에 GUID_32BIT 개념 넣어서 바꿀거임.
 

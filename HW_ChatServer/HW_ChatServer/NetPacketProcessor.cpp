@@ -19,38 +19,34 @@ void NetPacketProcessor::ProcessSessionRequest(std::list<kks::Session*>& rSessio
 		if (lstrcmpW(session->nickName, L"LISTEN_SOCK") == 0)
 		{
 			SOCKET client = Accept(session->sock);
-			if (client == SOCKET_ERROR)
+			if (client != SOCKET_ERROR)
 			{
-				continue;
+				netMng->AddSession(client, nullptr);
 			}
-			netMng->AddSession(client, nullptr);
+			continue;
 		}
-		else
+
+		char buf[4096];
+		INT recvLen = recv(session->sock, buf, 4096, 0);
+		if (recvLen == 0 || recvLen == SOCKET_ERROR)
 		{
-			char buf[4096];
-			INT recvLen = recv(session->sock, buf, 4096, 0);
-			if (recvLen == 0 || recvLen == SOCKET_ERROR)
+			if (WSAGetLastError() != WSAEWOULDBLOCK)
 			{
-				if (WSAGetLastError() == WSAEWOULDBLOCK)
-				{
-					continue;
-				}
+				wSessions.remove(session);
 				ResponseExitRoom(session);
 				// '0' means gracefully closed.
 				// 'SOCKET_ERROR' eq. -1, means something wrong.
 				netMng->RemoveSession(session);
-				wSessions.remove(session);
 			}
-			else
-			{
-				session->recvQ.Enqueue(buf, recvLen);
-				if (IsIntactPacket(*session) == true)
-				{
-					AnalysePacket(*session);
-				}
-				//wprintf_s(L"RECV\n");
-			}
+			continue;
 		}
+
+		session->recvQ.Enqueue(buf, recvLen);
+		if (IsIntactPacket(*session) == true)
+		{
+			AnalysePacket(*session);
+		}
+		//wprintf_s(L"RECV\n");
 	}
 
 	int sendCnt = 0;
@@ -130,7 +126,7 @@ bool NetPacketProcessor::IsIntactPacket(kks::Session& session)
 		return false;
 	}
 
-	if (session.recvQ.GetUseSize() - sizeof(st_PACKET_HEADER) < header.wPayloadSize)
+	if (session.recvQ.GetUseSize() < sizeof(st_PACKET_HEADER) + header.wPayloadSize)
 	{
 		return false;
 	}

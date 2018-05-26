@@ -8,6 +8,9 @@ NetManager::NetManager()
 {
 	m_conn = new NetConnector(dfNETWORK_PORT);
 	m_netPacketProcessor = new NetPacketProcessor(this);
+	
+	timeOut.tv_sec = 0;
+	timeOut.tv_usec = 0;
 }
 
 NetManager::~NetManager()
@@ -52,20 +55,14 @@ bool NetManager::Connect(void)
 	return AddSession(m_conn->GetListenSocket(), L"LISTEN_SOCK");
 }
 
-void NetManager::StartLoop(void)
+void NetManager::ProcessNetwork(void)
 {
-	IsServerRun = true;
-
-	timeval timeOut;
-	timeOut.tv_sec	= 0;
-	timeOut.tv_usec	= 0;
-
-	std::list<FD_SET> rSetList;
+	/*std::list<FD_SET> rSetList;
 	std::list<FD_SET> wSetList;
 	std::list<kks::Session*> rSessions;
-	std::list<kks::Session*> wSessions;
+	std::list<kks::Session*> wSessions;*/
 
-	while (IsServerRun)
+	if (IsServerRun)
 	{
 		// 1. FD_SET rSet, wSet 초기화 및 FD_SET list 얻기 (64명 이상 처리해야 하므로)
 		GetFdSetList(rSetList, wSetList);
